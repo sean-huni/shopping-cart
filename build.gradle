@@ -4,3 +4,182 @@
  * This is a general purpose Gradle build.
  * Learn more about Gradle by exploring our samples at https://docs.gradle.org/7.5/samples
  */
+
+plugins {
+    id 'java'
+    id 'jacoco'
+    id "org.sonarqube" version "6.0.0.5145"
+}
+
+jacoco {
+    toolVersion = "0.8.11"  // Latest stable version as of 2024
+}
+
+sonar {
+    properties {
+        property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+        property "sonar.qualitygate.wait", true  // Fails build if quality gate fails
+        property "sonar.qualitygate.timeout", "300"  // 5 minutes timeout
+
+        // Set specific metrics
+        property "sonar.coverage.exclusions", "**/StringUtil.*,**/StringUtil*,**/*InstantiationProhibitedException*"
+        property "sonar.coverage.exclusions", "**/InstantiationProhibitedException.*,**/StringUtil*"
+        property "sonar.test.exclusions", "src/test/**/*,**/StringUtil*,**/*InstantiationProhibitedException*,@Generated"
+        property "sonar.java.coveragePlugin", "jacoco"
+        property "sonar.junit.reportPaths", "${buildDir}/test-results/test"
+        property "sonar.tests", "src/test/java"
+
+        // Quality Gates
+        property "sonar.qualitygate.condition.1.metric", "coverage"
+        property "sonar.qualitygate.condition.1.op", "LT"
+        property "sonar.qualitygate.condition.1.error", "99"
+
+        property "sonar.qualitygate.condition.2.metric", "code_smells"
+        property "sonar.qualitygate.condition.2.op", "GT"
+        property "sonar.qualitygate.condition.2.error", "0"
+
+        property "sonar.qualitygate.condition.3.metric", "bugs"
+        property "sonar.qualitygate.condition.3.op", "GT"
+        property "sonar.qualitygate.condition.3.error", "0"
+    }
+}
+
+group = 'io.equalexperts'
+version = '0.0.1'
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    mockitoVersion = '5.15.2'
+    junitBomVersion = '5.10.0'
+    validatorVersion = '9.0.0.CR1'
+    glassfishVersion = '4.0.2'
+    l4jVersion = '2.24.3'
+    lombokVersion = '1.18.36'
+    gsonVersion = '2.12.1'
+}
+
+dependencies {
+    // Project Dependencies
+    implementation("org.hibernate.validator:hibernate-validator:${validatorVersion}")
+    implementation("org.glassfish:jakarta.el:${glassfishVersion}") // Required Hibernate Validator dependency
+    implementation "com.google.code.gson:gson:${gsonVersion}"
+
+    // Logging
+    compileOnly "org.projectlombok:lombok:${lombokVersion}" // Lombok for annotation based logging
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    implementation "org.apache.logging.log4j:log4j-api:${l4jVersion}"
+    implementation "org.apache.logging.log4j:log4j-core:${l4jVersion}"
+
+    // Test Dependencies
+    testImplementation(platform("org.junit:junit-bom:${junitBomVersion}"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.mockito:mockito-core:${mockitoVersion}")
+    testImplementation("org.mockito:mockito-junit-jupiter:${mockitoVersion}")
+    testImplementation("org.jacoco:org.jacoco.core:${jacoco.toolVersion}")
+
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport  // Generates report after tests run
+
+    // Fail tests on first failure
+    failFast = true
+}
+
+
+jacocoTestReport {
+    dependsOn test  // Tests are required to run before generating the report
+
+    reports {
+        xml.required = true  // XML report for CI tools
+        csv.required = false
+        //html.required = true
+        html {
+            required = true
+            outputLocation = layout.buildDirectory.dir('reports/jacoco')
+        }
+    }
+
+    classDirectories.setFrom(
+            fileTree(dir: "${buildDir}/classes/java/main", excludes: [
+                    '**/StringUtil*',
+                    '**/*Test*',
+                    '**/*InstantiationProhibitedException*',
+                    '@Generated'
+            ])
+    )
+
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = 'BUNDLE'
+            limit {
+                counter = 'INSTRUCTION'
+                value = 'COVEREDRATIO'
+                minimum = 0.99
+            }
+        }
+
+        rule {
+            enabled = true
+            element = 'CLASS'
+
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 0.99
+            }
+
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.99
+            }
+
+            limit {
+                counter = 'METHOD'
+                value = 'COVEREDRATIO'
+                minimum = 0.99
+            }
+
+            excludes = [
+                    '**/StringUtil*',
+                    '**/*Test*',
+                    '**/*InstantiationProhibitedException*'
+            ]
+        }
+    }
+}
+
+// Force verification checks
+check.dependsOn jacocoTestCoverageVerification
+
+// Ensure reports are generated before SonarQube analysis
+tasks.sonarqube {
+    dependsOn jacocoTestReport
+}
+
+
+// Make test task depend on verification
+test.finalizedBy jacocoTestCoverageVerification
+
+// Add a task to run all quality checks
+task qualityCheck {
+    dependsOn test
+    dependsOn jacocoTestCoverageVerification
+    dependsOn sonar
+
+    // Ensure correct order
+    jacocoTestCoverageVerification.mustRunAfter test
+
+}
+
+tasks.sonarqube {
+    dependsOn jacocoTestCoverageVerification
+}

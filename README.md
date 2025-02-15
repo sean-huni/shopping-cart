@@ -1,8 +1,11 @@
 ## :warning: Please read these instructions carefully and entirely first
+
 * Clone this repository to your local machine.
 * Use your IDE of choice to complete the assignment.
-* When you have completed the assignment, you need to  push your code to this repository and [mark the assignment as completed by clicking here](https://app.snapcode.review/submission_links/7e8f6245-4601-4d8e-99bb-36d8d03ae5a2).
-* Once you mark it as completed, your access to this repository will be revoked. Please make sure that you have completed the assignment and pushed all code from your local machine to this repository before you click the link.
+* When you have completed the assignment, you need to push your code to this repository
+  and [mark the assignment as completed by clicking here](https://app.snapcode.review/submission_links/7e8f6245-4601-4d8e-99bb-36d8d03ae5a2).
+* Once you mark it as completed, your access to this repository will be revoked. Please make sure that you have
+  completed the assignment and pushed all code from your local machine to this repository before you click the link.
 * There is no time limit for this task - however, for guidance, it is expected to typically take around 1-2 hours.
 
 # Begin the task
@@ -22,7 +25,8 @@ Write some code that provides the following basic shopping cart capabilities:
 
 ## Price API
 
-The price API is an existing API that returns the price details for a product, identified by it's name. The shopping cart should integrate with the price API to retrieve product prices. 
+The price API is an existing API that returns the price details for a product, identified by it's name. The shopping
+cart should integrate with the price API to retrieve product prices.
 
 ### Price API Service Details
 
@@ -31,6 +35,7 @@ Base URL: `https://equalexperts.github.io/`
 View Product: `GET /backend-take-home-test-data/{product}.json`
 
 List of available products
+
 * `cheerios`
 * `cornflakes`
 * `frosties`
@@ -38,14 +43,17 @@ List of available products
 * `weetabix`
 
 ## Example
+
 The below is a sample with the correct values you can use to confirm your calculations
 
 ### Inputs
+
 * Add 1 × cornflakes @ 2.52 each
 * Add another 1 x cornflakes @2.52 each
 * Add 1 × weetabix @ 9.98 each
-  
-### Results  
+
+### Results
+
 * Cart contains 2 x cornflakes
 * Cart contains 1 x weetabix
 * Subtotal = 15.02
@@ -54,7 +62,8 @@ The below is a sample with the correct values you can use to confirm your calcul
 
 ## Tips on what we’re looking for
 
-We value simplicity as an architectural virtue and as a development practice. Solutions should reflect the difficulty of the assigned task, and shouldn’t be overly complex. We prefer simple, well tested solutions over clever solutions. 
+We value simplicity as an architectural virtue and as a development practice. Solutions should reflect the difficulty of
+the assigned task, and shouldn’t be overly complex. We prefer simple, well tested solutions over clever solutions.
 
 ### DO
 
@@ -67,3 +76,149 @@ We value simplicity as an architectural virtue and as a development practice. So
 * ❌ Submit any form of app, such as web APIs, browser, desktop, or command-line applications.
 * ❌ Add unnecessary layers of abstraction.
 * ❌ Add unnecessary patterns/ architectural features that aren’t called for e.g. persistent storage.
+
+# Price API
+
+The price API is an existing API that returns the price details for a product, identified by it's name. The shopping
+cart should integrate with the price API to retrieve product prices.
+
+## Assumptions & Design Decisions
+
+1. API Characteristics
+   - Product names are unique and serve as SKUs
+   - Price details remain consistent across requests
+   - API supports up to 1000 requests/second
+   - Idempotent GET operations
+
+2. Error Handling
+   - Implements comprehensive exception handling
+   - Custom exceptions for different error scenarios
+   - Validation at multiple layers (input, price, cart)
+
+3. Architecture Decisions
+   - Lightweight in-memory cart implementation
+   - No persistence layer as per requirements
+   - Separation of concerns (validation, price fetching, cart operations)
+   - Thread-safe operations
+
+4. Quality Assurance
+   - Unit tests for all components
+   - Integration tests for API interaction
+   - Code coverage > 99%
+   - Sonar quality gates enforcement
+
+5. Future Improvements
+   - Add resilience patterns (Circuit Breaker, Retry)
+   - Support for multiple tax rates
+   - Bulk price fetching optimization
+   - Caching layer for price data
+
+## Sequence Diagram
+
+Let's start the fun-challenge by identifying the actors/services involved in the shopping cart system and the flow of
+request from one to the next. It makes it easier for me to identify the contracts (interfaces) between the services and
+the api. I'm very strong with BDD, but let's try adopt TDD for this challenge.
+
+TDD = Code to interfaces -> write the unit tests -> write the implementation -> refactor -> repeat.
+
+```uml
+     User            CartService     PriceAPIGatewayClient       Cart           ValidatorProvider
+      |                  |                    |                   |                    |
+      |                  |                    |                   |                    |
+      |--validateAndAddToCart(name,quantity)->|                   |                    | 
+      |                  |                    |                   |                    | 
+      |                  |-------validateUserInputs----------------------------------->|
+      |                  |                    |                   |                    |
+      |                  |<-----------------throwCartErrorsIfExist---------------------|
+      |                  |                    |                   |                    |
+      |<--errorsIfExist--|                    |                   |                    |
+      |                  |                    |                   |                    |
+      |                  |---getPrice(name)-->|                   |                    |
+      |                  |                    |                   |                    |
+      |                  |<--returnPrice------|                   |                    |
+      |                  |                    |                   |                    |
+      |                  |------validatePriceResponse--------------------------------->|
+      |                  |                    |                   |                    |
+      |                  |<-----------------throwPriceErrorsIfExist--------------------|
+      |                  |                    |                   |                    |
+      |<--errorsIfExist--|                    |                   |                    |
+      |                  |                    |                   |                    |
+      |                  |------------------addToCart------------>|                    |
+      |                  |                    |                   |                    |
+      |                  |                    |                   |--->+ 1. addToCart  |
+      |                  |                    |                   |    |               |
+      |                  |                    |                   |<---*               |
+      |                  |                    |                   |                    |
+      |                  |<-----------------returnCart------------|                    |
+      |                  |                    |                   |                    |
+      |                  |------------------getCartTotals-------->|                    |
+      |                  |                    |                   |                    |
+      |                  |                    |                   |--->+ 1. subTotal   |
+      |                  |                    |                   |    | 2. taxAmount  |
+      |                  |                    |                   |<---+ 3. total      |
+      |                  |                    |                   |                    |
+      |                  |                    |<---returnTotals---|                    |
+      |                  |                    |                   |                    |
+      |                  |<----cart+Totals----|                   |                    |
+      |                  |                    |                   |                    |
+      |<---cart+Totals---|                    |                   |                    |
+      |                  |                    |                   |                    |
+      |                  |                    |                   |                    |
+
+Error Flows:
+-------------
+1. Invalid Input Validation:
+   Client -> CartService: validateAndAddToCart(product with invalid data)
+   CartService -> ValidatorProvider: validateData(product)
+   ValidatorProvider -> CartService: throw CartValidationException
+   CartService -> Client: return ConsolidatedCart with CartError (400, VALIDATION_ERROR)
+
+2. Invalid Product (Not Found):
+   Client -> CartService: validateAndAddToCart(non-existent product)
+   CartService -> PriceAPIClient: getPrice(product)
+   PriceAPIClient -> CartService: throw Api400xError (404)
+   CartService -> Client: return ConsolidatedCart with CartError (404, NOT_FOUND_ERROR)
+
+3. Price Service Error:
+   Client -> CartService: validateAndAddToCart(product)
+   CartService -> PriceAPIClient: getPrice(product)
+   PriceAPIClient -> CartService: throw HttpAPIException
+   CartService -> Client: return ConsolidatedCart with CartError (500, PRICE_SERVICE_ERROR)
+
+4. Cart Operation Error:
+   Client -> CartService: validateAndAddToCart(product)
+   CartService -> Cart: addProduct(product, price)
+   Cart -> CartService: throw CartException
+   CartService -> Client: return ConsolidatedCart with CartError (400, VALIDATION_ERROR)
+
+5. Invalid Price Response:
+   Client -> CartService: validateAndAddToCart(product)
+   CartService -> ValidatorProvider: validateData(priceWrapper)
+   ValidatorProvider -> CartService: throw PriceServiceException
+   CartService -> Client: return ConsolidatedCart with CartError (400, PRICE_SERVICE_ERROR)
+   
+```
+
+## Manifest
+
+Software libraries that were used in the project, and need to be updated regularly to ensure the system is secure and
+up-to-date. The table below
+
+AS - Active Support
+SS - Security Support
+
+| Dependency      |  Version   |   AS EoL    |   SS EoL    | Last Updated |
+|:----------------|:----------:|:-----------:|:-----------:|:------------:|
+| Open-JDK        | 21.0.6-tem | 31-Dec-2029 | 31-Sep-2029 | 15-Feb-2025  |
+| SDK-MAN         |   5.19.0   |      -      |      -      | 15-Feb-2025  |
+| Gradle          |    8.10    |     LTS     |     LTS     | 15-Feb-2025  |
+| Gson            |   2.12.1   |      -      |      -      | 15-Feb-2025  |
+| Log4j           |   2.24.3   |      -      |      -      | 15-Feb-2025  |
+| Hiber-Validator | 9.0.0.CR1  |      -      |      -      | 15-Feb-2025  |
+| Lombok          |  1.18.36   |      -      |      -      | 15-Feb-2025  |
+
+[OSS End of Life](https://endoflife.date)
+
+# Jacoco Test Coverage Report
+
+![Jacoco Test Coverage Report](img.png)
