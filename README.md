@@ -253,22 +253,17 @@ Sonarque analysis can be found at: [SonarQube](http://localhost:9000)
 
 ![Jacoco Test Coverage Report](img_3.png)
 
-# Jacoco Test Coverage Report
+## Jacoco Test Coverage Report
 
 Find the Jacoco test coverage report in the unix-cmd: `ls -lah build/reports/jacoco/index.html` directory.
 Screenshot below:
 ![Jacoco Test Coverage Report](img.png)
 
-# SonarQube Analysis
-
-Pending...
-
 # Potential Areas of Improvements
 
-- Spin-up local Sonarqube server for additional code quality checks.❓
-- Add resilience patterns (Circuit Breaker, Retry): Resilience4j.❓
+- Spin-up local Sonarqube server for additional code quality checks.✅
 - Support for different tax rates. ✅
+- Add resilience patterns (Circuit Breaker, Retry): Resilience4j.❓
 - Async Bulk price fetching optimization: Caching layer for price data, & agree with price-api-client on data-refresh
   rate/frequency.❓
 - Caching layer for price data: Caffeine, Ehcache.❓
-- 
