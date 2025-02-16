@@ -59,7 +59,7 @@ public class CartImpl implements Cart {
         }
         final var taxAmount = calculateTaxAmount(subTotal);
         final var total = subTotal.add(taxAmount);
-        log.info("Cart totals: Tax: {}, Subtotal: {}, Total: {}", taxAmount, subTotal, total);  // ToDo: Set to debug/trace level
+        log.debug("Cart totals: Tax: {}, Subtotal: {}, Total: {}", taxAmount, subTotal, total);
         return new CartTotals(
                 taxAmount.setScale(2, RoundingMode.HALF_UP),
                 subTotal.setScale(2, RoundingMode.HALF_UP),

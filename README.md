@@ -232,6 +232,27 @@ To run the tests, execute the following command:
 - Int tests: `./gradlew clean test -Ptags=int`
 - Int & Unit tests: `./gradlew clean test -Ptags=int,unit`
 
+# SonarQube Analysis
+
+Execute sonarqube analysis with the following command:
+`./gradlew sonar -Dsonar.projectKey=Equal-Experts -Dsonar.projectName='Equal-Experts' -Dsonar.host.url=http://localhost:9000 -Dsonar.token=sqp_eafffb588bf1d4d9b2c5c6f350254a70bb11793f`
+Sonarque analysis can be found at: [SonarQube](http://localhost:9000)
+
+- Remember to change the sonar.token value to your own token.
+  Screenshots below:
+
+### Current SonarQube Code Quality Metrics:
+
+![SonarQube Dashboard](img_1.png)
+
+### After fixing 4 issues raised by SonarQube:
+
+![Jacoco Test Coverage Report](img_2.png)
+
+### Resolution graph for the 4 issues in 30mins (17:19 - 17:49):
+
+![Jacoco Test Coverage Report](img_3.png)
+
 # Jacoco Test Coverage Report
 
 Find the Jacoco test coverage report in the unix-cmd: `ls -lah build/reports/jacoco/index.html` directory.
