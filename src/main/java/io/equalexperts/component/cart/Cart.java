@@ -1,4 +1,4 @@
-package io.equalexperts.component;
+package io.equalexperts.component.cart;
 
 import io.equalexperts.model.CartTotals;
 import io.equalexperts.model.ItemMetadata;

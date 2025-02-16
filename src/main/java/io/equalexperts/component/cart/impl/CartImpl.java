@@ -1,6 +1,7 @@
-package io.equalexperts.component.impl;
+package io.equalexperts.component.cart.impl;
 
-import io.equalexperts.component.Cart;
+import io.equalexperts.component.cart.Cart;
+import io.equalexperts.component.tax.TaxCalculator;
 import io.equalexperts.exception.CartException;
 import io.equalexperts.model.CartTotals;
 import io.equalexperts.model.ItemMetadata;
@@ -9,13 +10,17 @@ import lombok.extern.log4j.Log4j2;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Log4j2
 public class CartImpl implements Cart {
-    private final Map<String, ItemMetadata> items = new HashMap<>();
-    private static final BigDecimal SALE_TAX = BigDecimal.valueOf(12.5);   // 12.5% Tax Rate
+    private final Map<String, ItemMetadata> items = new ConcurrentHashMap<>();
+    private final TaxCalculator taxCalculator;
+
+    public CartImpl(final TaxCalculator taxCalculator) {
+        this.taxCalculator = taxCalculator;
+    }
 
     /**
      * Adds a product to the cart with the specified price. If the product already exists in the cart,
@@ -57,7 +62,7 @@ public class CartImpl implements Cart {
             final ItemMetadata itemMetadata = entry.getValue();
             subTotal = calculateItemSubTotal(subTotal, itemMetadata.getPrice(), itemMetadata.getQuantity());
         }
-        final var taxAmount = calculateTaxAmount(subTotal);
+        final var taxAmount = taxCalculator.calculateTaxAmount(subTotal);
         final var total = subTotal.add(taxAmount);
         log.info("Cart totals: Tax: {}, Subtotal: {}, Total: {}", taxAmount, subTotal, total);  // ToDo: Set to debug/trace level
         return new CartTotals(
@@ -78,15 +83,5 @@ public class CartImpl implements Cart {
      */
     private BigDecimal calculateItemSubTotal(final BigDecimal subTotal, final BigDecimal price, final int quantity) {
         return subTotal.add(price.multiply(new BigDecimal(quantity)));
-    }
-
-    /**
-     * Calculates the tax amount based on the provided subtotal and a predefined sales tax rate.
-     *
-     * @param subTotal The subtotal amount for which the tax is to be calculated. Must not be null.
-     * @return The calculated tax amount as a BigDecimal.
-     */
-    private BigDecimal calculateTaxAmount(final BigDecimal subTotal) {
-        return subTotal.multiply(SALE_TAX.divide(BigDecimal.valueOf(100)));
     }
 }

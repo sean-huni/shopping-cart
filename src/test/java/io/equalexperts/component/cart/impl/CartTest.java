@@ -1,6 +1,8 @@
-package io.equalexperts.component.impl;
+package io.equalexperts.component.cart.impl;
 
-import io.equalexperts.component.Cart;
+import io.equalexperts.component.cart.Cart;
+import io.equalexperts.component.tax.TaxCalculator;
+import io.equalexperts.component.tax.impl.TaxCalculatorImpl;
 import io.equalexperts.exception.CartException;
 import io.equalexperts.model.ProductIn;
 import org.junit.jupiter.api.DisplayName;
@@ -16,7 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Tag("unit")
 @DisplayName("Unit-Tests - Given Cart State")
 class CartTest {
-    private final Cart cart = new CartImpl();
+    private final TaxCalculator taxCalculator = new TaxCalculatorImpl(BigDecimal.valueOf(12.5)); // @12.5% tax
+    private final Cart cart = new CartImpl(taxCalculator);
 
     @Nested
     @DisplayName("When addProduct is called - Positive Scenarios")
