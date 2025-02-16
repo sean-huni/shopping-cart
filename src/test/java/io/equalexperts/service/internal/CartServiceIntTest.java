@@ -1,7 +1,9 @@
 package io.equalexperts.service.internal;
 
-import io.equalexperts.component.Cart;
-import io.equalexperts.component.impl.CartImpl;
+import io.equalexperts.component.cart.Cart;
+import io.equalexperts.component.cart.impl.CartImpl;
+import io.equalexperts.component.tax.TaxCalculator;
+import io.equalexperts.component.tax.impl.TaxCalculatorImpl;
 import io.equalexperts.model.ProductIn;
 import io.equalexperts.service.external.priceclient.PriceAPIClient;
 import io.equalexperts.service.external.priceclient.impl.PriceAPIClientImpl;
@@ -24,9 +26,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag("int") //Integration test
 @DisplayName("Int-Tests - Given CartService")
 class CartServiceIntTest {
+    private final TaxCalculator taxCalculator = new TaxCalculatorImpl(BigDecimal.valueOf(12.5)); // @12.5% tax
     private final ValidatorProvider validatorProvider = new ValidatorProviderImpl();
     private final PriceAPIClient priceAPIClient = new PriceAPIClientImpl();
-    private final Cart cart = new CartImpl();
+    private final Cart cart = new CartImpl(taxCalculator);
     private final CartService cartService = new CartServiceImpl(validatorProvider, priceAPIClient, cart);
 
     @Nested
