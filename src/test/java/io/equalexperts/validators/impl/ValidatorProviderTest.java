@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("unit")
-@DisplayName("Given Validator-Provider")
+@DisplayName("Unit-Tests - Given Validator-Provider")
 class ValidatorProviderTest {
     private final ValidatorProvider validatorProvider = new ValidatorProviderImpl();
 

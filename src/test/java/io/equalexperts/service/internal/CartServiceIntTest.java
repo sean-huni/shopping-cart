@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("int") //Integration test
-@DisplayName("Int-Test - Given CartService")
+@DisplayName("Int-Tests - Given CartService")
 class CartServiceIntTest {
     private final ValidatorProvider validatorProvider = new ValidatorProviderImpl();
     private final PriceAPIClient priceAPIClient = new PriceAPIClientImpl();

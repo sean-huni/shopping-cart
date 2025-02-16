@@ -1,6 +1,7 @@
 package io.equalexperts.service.internal;
 
 import io.equalexperts.component.impl.CartImpl;
+import io.equalexperts.exception.Api400xError;
 import io.equalexperts.exception.CartException;
 import io.equalexperts.model.CartError;
 import io.equalexperts.model.CartTotals;
@@ -34,6 +35,7 @@ import static org.mockito.Mockito.when;
 @Tag("unit")
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@DisplayName("Unit-Tests - Given Mocked CartService")
 class CartServiceTest {
     @Mock
     private ValidatorProvider validator;    // For Product validation
@@ -88,6 +90,23 @@ class CartServiceTest {
 
             final var cartException = cartService.validateAndAddToCart(cheerios);
             assertEquals("Price must be non-negative", cartException.errors().message());
+        }
+
+        @Test
+        @DisplayName("Return CartErrors when product is not found (Api400xError)")
+        void returnCartErrorsWhenProductNotFound() {
+            // Given
+            final String productName = "nonexistent-product";
+            when(priceAPIClient.getPrice(productName)).thenThrow(new Api400xError(404, "Product not found")); // Simulate Api400xError
+
+            final ProductIn productIn = new ProductIn(productName, 1);
+
+            // When
+            final var response = cartService.validateAndAddToCart(productIn);
+
+            // Then
+            assertEquals(404, response.errors().statusCode()); // Verify that the error code matches
+            assertEquals("Product %s not found".formatted(productName), response.errors().message()); // Verify the error message
         }
     }
 }

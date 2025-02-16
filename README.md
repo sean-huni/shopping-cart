@@ -219,6 +219,21 @@ SS - Security Support
 
 [OSS End of Life](https://endoflife.date)
 
+# Executing Tests
+
+Classification of tests are used to categorize tests into different groups using tags. This allows for execution of
+specific context of tests. Whether it be unit tests, integration tests, or both. Tags: `unit`, `int`.
+
+To run the tests, execute the following command:
+
+- Complete build with tests: `./gradlew clean build`
+- All tests: `./gradlew clean test`
+- Unit tests: `./gradlew clean test -Ptags=unit`
+- Int tests: `./gradlew clean test -Ptags=int`
+- Int & Unit tests: `./gradlew clean test -Ptags=int,unit`
+
 # Jacoco Test Coverage Report
 
+Find the Jacoco test coverage report in the unix-cmd: `ls -lah build/reports/jacoco/index.html` directory.
+Screenshot below:
 ![Jacoco Test Coverage Report](img.png)

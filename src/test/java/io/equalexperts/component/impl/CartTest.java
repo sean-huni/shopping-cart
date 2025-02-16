@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Tag("unit")
-@DisplayName("Given Cart State")
+@DisplayName("Unit-Tests - Given Cart State")
 class CartTest {
     private final Cart cart = new CartImpl();
 

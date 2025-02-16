@@ -1,17 +1,11 @@
 package io.equalexperts.util;
 
-import io.equalexperts.exception.InstantiationProhibitedException;
+import lombok.experimental.UtilityClass;
 
-import javax.annotation.processing.Generated;
 import java.util.Map;
 
-@Generated("io.quickvote.util.StringUtil")
+@UtilityClass
 public final class StringUtil {
-
-    private StringUtil() {
-        throw new InstantiationProhibitedException("This class cannot be instantiated");
-    }
-
     // Utility method for custom error formatting
     public static String formatErrors(Map<String, String> errors) {
         StringBuilder builder = new StringBuilder();
@@ -20,5 +14,4 @@ public final class StringUtil {
         );
         return builder.toString();
     }
-
 }

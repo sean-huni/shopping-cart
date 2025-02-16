@@ -15,16 +15,25 @@ jacoco {
     toolVersion = "0.8.11"  // Latest stable version as of 2024
 }
 
+// Define exclusions in one place to maintain consistency
+def exclusions = ['**/*Test*', '@Generated']
+
+// Test pattern for excluding files from test coverage
+def testPattern = [
+        '**/*Test*',
+        '**/model/**',
+        '@Generated'
+]
+
 sonar {
     properties {
         property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
         property "sonar.qualitygate.wait", true  // Fails build if quality gate fails
         property "sonar.qualitygate.timeout", "300"  // 5 minutes timeout
 
-        // Set specific metrics
-        property "sonar.coverage.exclusions", "**/StringUtil.*,**/StringUtil*,**/*InstantiationProhibitedException*"
-        property "sonar.coverage.exclusions", "**/InstantiationProhibitedException.*,**/StringUtil*"
-        property "sonar.test.exclusions", "src/test/**/*,**/StringUtil*,**/*InstantiationProhibitedException*,@Generated"
+        // Sonar exclusions
+        property "sonar.coverage.exclusions", excludedClasses.join(',')
+        property "sonar.test.exclusions", "src/test/**/*," + testPattern.join(',')
         property "sonar.java.coveragePlugin", "jacoco"
         property "sonar.junit.reportPaths", "${buildDir}/test-results/test"
         property "sonar.tests", "src/test/java"
@@ -83,10 +92,12 @@ dependencies {
 }
 
 test {
-    useJUnitPlatform()
-    finalizedBy jacocoTestReport  // Generates report after tests run
-
-    // Fail tests on first failure
+    useJUnitPlatform() {
+        if (project.hasProperty('tags')) {
+            includeTags project.tags.split(',')
+        }
+    }
+    finalizedBy jacocoTestReport
     failFast = true
 }
 
@@ -97,7 +108,6 @@ jacocoTestReport {
     reports {
         xml.required = true  // XML report for CI tools
         csv.required = false
-        //html.required = true
         html {
             required = true
             outputLocation = layout.buildDirectory.dir('reports/jacoco')
@@ -106,9 +116,7 @@ jacocoTestReport {
 
     classDirectories.setFrom(
             fileTree(dir: "${buildDir}/classes/java/main", excludes: [
-                    '**/StringUtil*',
                     '**/*Test*',
-                    '**/*InstantiationProhibitedException*',
                     '@Generated'
             ])
     )
@@ -124,17 +132,14 @@ jacocoTestCoverageVerification {
                 value = 'COVEREDRATIO'
                 minimum = 0.99
             }
+            excludes = exclusions
         }
 
         rule {
             enabled = true
             element = 'CLASS'
-
-            limit {
-                counter = 'BRANCH'
-                value = 'COVEREDRATIO'
-                minimum = 0.99
-            }
+            includes = ['io.equalexperts.*']
+            excludes = ['**/*Test*', '@Generated']
 
             limit {
                 counter = 'LINE'
@@ -148,11 +153,13 @@ jacocoTestCoverageVerification {
                 minimum = 0.99
             }
 
-            excludes = [
-                    '**/StringUtil*',
-                    '**/*Test*',
-                    '**/*InstantiationProhibitedException*'
-            ]
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 0.99
+            }
+
+            excludes = exclusions
         }
     }
 }
@@ -175,7 +182,6 @@ task qualityCheck {
     dependsOn jacocoTestCoverageVerification
     dependsOn sonar
 
-    // Ensure correct order
     jacocoTestCoverageVerification.mustRunAfter test
 
 }

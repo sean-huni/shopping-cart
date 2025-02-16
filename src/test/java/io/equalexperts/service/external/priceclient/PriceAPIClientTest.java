@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 @Tag("unit")
-@DisplayName("Given Mocked Pricing-API-Gateway")
+@DisplayName("Unit-Tests - Given Mocked Pricing-API-Gateway")
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class PriceAPIClientTest {

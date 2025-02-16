@@ -19,13 +19,13 @@ import java.net.http.HttpResponse;
 @Log4j2
 public class PriceAPIClientImpl implements PriceAPIClient {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private final String BASE_URL;
-    private final String PRICE_API_URI;
+    private final String baseUrl;
+    private final String priceApiUri;
     private final HttpClient httpClient;
 
     public PriceAPIClientImpl() {
-        PRICE_API_URI = "backend-take-home-test-data";
-        BASE_URL = "https://equalexperts.github.io";
+        priceApiUri = "backend-take-home-test-data";
+        baseUrl = "https://equalexperts.github.io";
         httpClient = HttpClient.newHttpClient();
     }
 
@@ -50,7 +50,7 @@ public class PriceAPIClientImpl implements PriceAPIClient {
 
 
     protected String buildEndpoint(final String productName) {
-        return "%s/%s/%s.json".formatted(BASE_URL, PRICE_API_URI, productName);
+        return "%s/%s/%s.json".formatted(baseUrl, priceApiUri, productName);
     }
 
     protected HttpRequest buildRequest(final String endpoint) {
@@ -73,11 +73,18 @@ public class PriceAPIClientImpl implements PriceAPIClient {
             }
             case HttpURLConnection.HTTP_NOT_FOUND -> {
                 final var errorMsg = "Product %s was not Found. HTTP status: %d".formatted(productName, response.statusCode());
+                log.warn(errorMsg);
                 throw new Api400xError(HttpURLConnection.HTTP_NOT_FOUND, errorMsg);
             }
+            case HttpURLConnection.HTTP_BAD_REQUEST -> {
+                final var errorMsg = "Failed Product Request: %s. HTTP status: %d".formatted(productName, response.statusCode());
+                log.error(errorMsg);
+                throw new Api400xError(HttpURLConnection.HTTP_BAD_REQUEST, errorMsg);
+            }
             default -> {
-                final var errorMsg = "Failed to fetch product details. HTTP status: %d".formatted(response.statusCode());
-                throw new HttpAPIException(errorMsg);
+                final var defaultMsg = "Failed to fetch product details. HTTP status: %d".formatted(response.statusCode());
+                log.warn("Unexpected status code: {}. {}", response.statusCode(), defaultMsg);
+                throw new HttpAPIException(defaultMsg);
             }
         }
     }
