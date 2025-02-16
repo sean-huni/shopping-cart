@@ -1,6 +1,5 @@
 package io.equalexperts.component.cart;
 
-import io.equalexperts.model.CartTotals;
 import io.equalexperts.model.ItemMetadata;
 import io.equalexperts.model.ProductIn;
 
@@ -19,11 +18,4 @@ public interface Cart {
      * the values are ItemMetadata objects containing price and updated quantities of products.
      */
     Map<String, ItemMetadata> addProduct(final ProductIn productIn, final BigDecimal price);
-
-    /**
-     * Calculates and retrieves the totals for the cart, including tax, subtotal, and total amount.
-     *
-     * @return An instance of CartTotals containing the computed tax, subtotal, and total values for the cart.
-     */
-    CartTotals getCartTotals();
 }

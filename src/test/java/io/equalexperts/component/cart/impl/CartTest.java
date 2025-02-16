@@ -1,8 +1,6 @@
 package io.equalexperts.component.cart.impl;
 
 import io.equalexperts.component.cart.Cart;
-import io.equalexperts.component.tax.TaxCalculator;
-import io.equalexperts.component.tax.impl.TaxCalculatorImpl;
 import io.equalexperts.exception.CartException;
 import io.equalexperts.model.ProductIn;
 import org.junit.jupiter.api.DisplayName;
@@ -18,8 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Tag("unit")
 @DisplayName("Unit-Tests - Given Cart State")
 class CartTest {
-    private final TaxCalculator taxCalculator = new TaxCalculatorImpl(BigDecimal.valueOf(12.5)); // @12.5% tax
-    private final Cart cart = new CartImpl(taxCalculator);
+    private final Cart cart = new CartImpl();
 
     @Nested
     @DisplayName("When addProduct is called - Positive Scenarios")
@@ -84,13 +81,17 @@ class CartTest {
             cart.addProduct(cheerios, cheeriosPrice);
             cart.addProduct(chocolates, chocolatesPrice);
             final var items = cart.addProduct(cornflakes, cornflakesPrice);
-            final var totals = cart.getCartTotals();
 
             // Then
             assertEquals(3, items.size());
-            assertEquals(99.84, totals.tax().doubleValue());
-            assertEquals(798.68, totals.subTotal().doubleValue());
-            assertEquals(898.52, totals.total().doubleValue());
+            assertEquals(19.09, items.get("cheerios").getPrice().doubleValue());
+            assertEquals(1, items.get("cheerios").getQuantity());
+
+            assertEquals(34.99, items.get("cornflakes").getPrice().doubleValue());
+            assertEquals(5, items.get("cornflakes").getQuantity());
+
+            assertEquals(37.79, items.get("chocolates").getPrice().doubleValue());
+            assertEquals(16, items.get("chocolates").getQuantity());
         }
     }
 
@@ -141,13 +142,9 @@ class CartTest {
             // When
             final var price = BigDecimal.valueOf(9.39);
             final var cartState = cart.addProduct(productIn, price);
-            final var totals = cart.getCartTotals();
 
             // Then
             assertEquals(1, cartState.size());
-            assertEquals(0, totals.tax().doubleValue());
-            assertEquals(0, totals.subTotal().doubleValue());
-            assertEquals(0, totals.total().doubleValue());
         }
     }
 }

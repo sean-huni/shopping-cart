@@ -1,10 +1,11 @@
 package io.equalexperts.service.internal;
 
-import io.equalexperts.component.cart.impl.CartImpl;
+import io.equalexperts.component.facade.CartFacade;
 import io.equalexperts.exception.Api400xError;
 import io.equalexperts.exception.CartException;
 import io.equalexperts.model.CartError;
 import io.equalexperts.model.CartTotals;
+import io.equalexperts.model.ConsolidatedCart;
 import io.equalexperts.model.ItemMetadata;
 import io.equalexperts.model.ProductIn;
 import io.equalexperts.service.external.priceclient.PriceAPIClient;
@@ -42,16 +43,19 @@ class CartServiceTest {
     @Mock
     private PriceAPIClient priceAPIClient;    // For Price validation
     @Mock
-    private CartImpl cart;      // For Cart operations
+    private CartFacade cartFacade;      // For Cart operations
     @InjectMocks
     private CartServiceImpl cartService;
 
     @BeforeEach
     void setUp() {
+        final CartTotals cartTotals = new CartTotals(BigDecimal.valueOf(19.09), BigDecimal.valueOf(2.38625), BigDecimal.valueOf(21.47625));
+        final ConsolidatedCart consolidatedCart = new ConsolidatedCart(null, Map.of("cheerios", new ItemMetadata(BigDecimal.valueOf(12.34), 3)), cartTotals);
+
         doNothing().when(validator).validateData(new ProductIn("cheerios", 3));
         when(priceAPIClient.getPrice("cheerios")).thenReturn(BigDecimal.valueOf(19.09));
-        when(cart.addProduct(new ProductIn("cheerios", 3), BigDecimal.valueOf(19.09))).thenReturn(Map.of("cheerios", new ItemMetadata(BigDecimal.valueOf(19.09), 3)));
-        when(cart.getCartTotals()).thenReturn(new CartTotals(BigDecimal.valueOf(19.09), BigDecimal.valueOf(2.38625), BigDecimal.valueOf(21.47625)));
+        when(cartFacade.checkoutAndShowTotals(new ProductIn("cheerios", 3), BigDecimal.valueOf(19.09)))
+                .thenReturn(consolidatedCart);
     }
 
     @Nested
@@ -63,7 +67,7 @@ class CartServiceTest {
             final var consolidatedCart = cartService.validateAndAddToCart(cheerios);
 
             assertTrue(consolidatedCart.shoppingCart().containsKey("cheerios"));
-            assertEquals(BigDecimal.valueOf(19.09).doubleValue(), consolidatedCart.shoppingCart().get("cheerios").getPrice().doubleValue());
+            assertEquals(BigDecimal.valueOf(12.34).doubleValue(), consolidatedCart.shoppingCart().get("cheerios").getPrice().doubleValue());
         }
     }
 
@@ -83,7 +87,7 @@ class CartServiceTest {
 
         @Test
         void returnCartErrorsWhenAddingToCart() {
-            when(cart.addProduct(any(), any())).thenThrow(new CartException("Price must be non-negative"));
+            when(cartFacade.checkoutAndShowTotals(any(), any())).thenThrow(new CartException("Price must be non-negative"));
             when(validator.buildErrors(any())).thenReturn(new CartError(400L, VALIDATION_ERROR, null, "Price must be non-negative"));
 
             final ProductIn cheerios = new ProductIn("choco", 9);
