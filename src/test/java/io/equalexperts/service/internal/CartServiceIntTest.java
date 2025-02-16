@@ -1,7 +1,11 @@
 package io.equalexperts.service.internal;
 
+import io.equalexperts.component.calculator.CartCalculator;
+import io.equalexperts.component.calculator.impl.CartCalculatorImpl;
 import io.equalexperts.component.cart.Cart;
 import io.equalexperts.component.cart.impl.CartImpl;
+import io.equalexperts.component.facade.CartFacade;
+import io.equalexperts.component.facade.impl.CartFacadeImpl;
 import io.equalexperts.component.tax.TaxCalculator;
 import io.equalexperts.component.tax.impl.TaxCalculatorImpl;
 import io.equalexperts.model.ProductIn;
@@ -29,8 +33,10 @@ class CartServiceIntTest {
     private final TaxCalculator taxCalculator = new TaxCalculatorImpl(BigDecimal.valueOf(12.5)); // @12.5% tax
     private final ValidatorProvider validatorProvider = new ValidatorProviderImpl();
     private final PriceAPIClient priceAPIClient = new PriceAPIClientImpl();
-    private final Cart cart = new CartImpl(taxCalculator);
-    private final CartService cartService = new CartServiceImpl(validatorProvider, priceAPIClient, cart);
+    private final Cart cart = new CartImpl();
+    private final CartCalculator cartCalculator = new CartCalculatorImpl(taxCalculator);
+    private final CartFacade cartFacade = new CartFacadeImpl(cart, cartCalculator);
+    private final CartService cartService = new CartServiceImpl(validatorProvider, priceAPIClient, cartFacade);
 
     @Nested
     @DisplayName("Validate & AddToCart - Positive Int-Test Scenarios")
