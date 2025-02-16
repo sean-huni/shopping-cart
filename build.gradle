@@ -8,7 +8,7 @@
 plugins {
     id 'java'
     id 'jacoco'
-    id "org.sonarqube" version "6.0.0.5145"
+    id "org.sonarqube" version "6.0.1.5171"
 }
 
 jacoco {
@@ -19,11 +19,7 @@ jacoco {
 def exclusions = ['**/*Test*', '@Generated']
 
 // Test pattern for excluding files from test coverage
-def testPattern = [
-        '**/*Test*',
-        '**/model/**',
-        '@Generated'
-]
+def testPattern = ['**/*Test*', '@Generated']
 
 sonar {
     properties {
@@ -32,7 +28,7 @@ sonar {
         property "sonar.qualitygate.timeout", "300"  // 5 minutes timeout
 
         // Sonar exclusions
-        property "sonar.coverage.exclusions", excludedClasses.join(',')
+        property "sonar.coverage.exclusions", exclusions.join(',')
         property "sonar.test.exclusions", "src/test/**/*," + testPattern.join(',')
         property "sonar.java.coveragePlugin", "jacoco"
         property "sonar.junit.reportPaths", "${buildDir}/test-results/test"
@@ -54,7 +50,7 @@ sonar {
 }
 
 group = 'io.equalexperts'
-version = '0.0.1'
+version = '0.0.2'
 
 repositories {
     mavenCentral()
