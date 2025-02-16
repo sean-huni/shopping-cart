@@ -78,7 +78,7 @@ class PriceAPIClientImplTest {
             // When & Then
             final HttpAPIException exception = assertThrows(HttpAPIException.class, () -> priceAPIClient.getPrice("cornflakes"));
 
-            assertTrue(exception.getMessage().contains("Error occurred while making API call"));
+            assertTrue(exception.getMessage().contains("Thread was interrupted: Connection timeout"));
             assertInstanceOf(InterruptedException.class, exception.getCause());
 
             // Verify that the mock was invoked

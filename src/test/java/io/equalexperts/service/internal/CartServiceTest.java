@@ -1,6 +1,6 @@
 package io.equalexperts.service.internal;
 
-import io.equalexperts.component.impl.CartImpl;
+import io.equalexperts.component.cart.impl.CartImpl;
 import io.equalexperts.exception.Api400xError;
 import io.equalexperts.exception.CartException;
 import io.equalexperts.model.CartError;

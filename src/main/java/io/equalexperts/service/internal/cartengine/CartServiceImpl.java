@@ -1,6 +1,6 @@
 package io.equalexperts.service.internal.cartengine;
 
-import io.equalexperts.component.Cart;
+import io.equalexperts.component.cart.Cart;
 import io.equalexperts.exception.Api400xError;
 import io.equalexperts.exception.CartException;
 import io.equalexperts.model.CartError;
@@ -49,7 +49,7 @@ public class CartServiceImpl implements CartService {
             final CartError cartError = new CartError(notFound.getStatus(), NOT_FOUND_ERROR, null, "Product %s not found".formatted(productIn.name()));
             return new ConsolidatedCart(cartError, null, null);
         } catch (final Exception e) {
-            log.error("CartException: {}", e.getMessage(), e);
+            log.error("Exception: {}", e.getMessage(), e);
             final CartError cartError = new CartError(500L, INTERNAL_ERROR, null, "Internal Server Error");
             return new ConsolidatedCart(cartError, null, null);
         }

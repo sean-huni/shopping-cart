@@ -42,9 +42,14 @@ public class PriceAPIClientImpl implements PriceAPIClient {
         try {
             final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             return extractResponse(productName, response);
-        } catch (IOException | InterruptedException e) {
+        } catch (
+                IOException e) { // Sonarqube Feedback: Either re-interrupt this method or rethrow the "InterruptedException" that can be caught here.
             log.error("Error occurred while making API call: {}", e.getMessage(), e);
             throw new HttpAPIException("Error occurred while making API call: %s".formatted(e.getMessage()), e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // Restore interrupt status
+            log.error("Thread was interrupted during API call: {}", e.getMessage(), e);
+            throw new HttpAPIException("Thread was interrupted: %s".formatted(e.getMessage()), e);
         }
     }
 
