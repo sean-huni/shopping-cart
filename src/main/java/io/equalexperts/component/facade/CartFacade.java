@@ -16,5 +16,5 @@ public interface CartFacade {
      * @return A ConsolidatedCart object containing potential errors (if any), the updated state of the
      * shopping cart, and the calculated totals including tax, subtotal, and total.
      */
-    ConsolidatedCart checkoutAndShowTotals(ProductIn productIn, BigDecimal price);
+    ConsolidatedCart addToCartAndGetTotals(ProductIn productIn, BigDecimal price);
 }

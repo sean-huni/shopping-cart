@@ -122,54 +122,59 @@ the api. I'm very strong with BDD, but let's try adopt TDD for this challenge.
 TDD = Code to interfaces -> write the unit tests -> write the implementation -> refactor -> repeat.
 
 ```uml
-     User            CartService     PriceAPIGatewayClient       Cart           ValidatorProvider      TaxCalculator
-      |                  |                    |                   |                    |                    |
-      |                  |                    |                   |                    |                    |
-      |--validateAndAddToCart(name,quantity)->|                   |                    |                    |
-      |                  |                    |                   |                    |                    |
-      |                  |-------validateUserInputs----------------------------------->|                    |
-      |                  |                    |                   |                    |                    |
-      |                  |<-----------------throwCartErrorsIfExist---------------------|                    |
-      |                  |                    |                   |                    |                    |
-      |<--errorsIfExist--|                    |                   |                    |                    |
-      |                  |                    |                   |                    |                    |
-      |                  |---getPrice(name)-->|                   |                    |                    |
-      |                  |                    |                   |                    |                    |
-      |                  |<--returnPrice------|                   |                    |                    |
-      |                  |                    |                   |                    |                    |
-      |                  |------validatePriceResponse--------------------------------->|                    |
-      |                  |                    |                   |                    |                    |
-      |                  |<-----------------throwPriceErrorsIfExist--------------------|                    |
-      |                  |                    |                   |                    |                    |
-      |<--errorsIfExist--|                    |                   |                    |                    |
-      |                  |                    |                   |                    |                    |
-      |                  |------------------addToCart------------>|                    |                    |
-      |                  |                    |                   |                    |                    |
-      |                  |                    |                   |--->+ 1. addToCart  |                    |
-      |                  |                    |                   |    |               |                    |
-      |                  |                    |                   |<---*               |                    |
-      |                  |                    |                   |                    |                    |
-      |                  |<-----------------returnCart------------|                    |                    |
-      |                  |                    |                   |                    |                    |
-      |                  |------------------getCartTotals-------->|                    |                    |
-      |                  |                    |                   |                    |                    |
-      |                  |                    |                   |-------1. calTaxAmount------------------>|
-      |                  |                    |                   |                    |                    |
-      |                  |                    |                   |<------returnTaxAmount-------------------|
-      |                  |                    |                   |                    |                    |
-      |                  |                    |                   |--->+               |                    |
-      |                  |                    |                   |    | 2. subTotal   |                    |
-      |                  |                    |                   |<---+ 3. total      |                    |
-      |                  |                    |                   |                    |                    |
-      |                  |                    |<---returnTotals---|                    |                    |
-      |                  |                    |                   |                    |                    |
-      |                  |<----cart+Totals----|                   |                    |                    |
-      |                  |                    |                   |                    |                    |
-      |<---cart+Totals---|                    |                   |                    |                    |
-      |                  |                    |                   |                    |                    |
-      |                  |                    |                   |                    |                    |
-
-Error Flows:
+     User             CartService     PriceAPIGatewayClient   ValidatorProvider       CartFacade             Cart            CartCalculator        TaxCalculator
+      |                    |                    |                    |                    |                    |                    |                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |---validateAndAddToCart(name,quantity)-->|                    |                    |                    |                    |                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |                    |-------validateUserInputs--------------->|                    |                    |                    |                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |                    |<---throwCartErrorsIfExist---------------|                    |                    |                    |                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |<---errorsIfExist---|                    |                    |                    |                    |                    |                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |                    |---getPrice(name)-->|                    |                    |                    |                    |                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |                    |<--returnPrice------|                    |                    |                    |                    |                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |                    |-----validatePriceResponse-------------->|                    |                    |                    |                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |                    |<----throwPriceErrorsIfExist-------------|                    |                    |                    |                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |<---errorsIfExist---|                    |                    |                    |                    |                    |                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |                    |-------------------addToCartAndGetTotals--------------------->|                    |                    |                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |                    |                    |                    |                    |-----addToCart----->|                    |                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |                    |                    |                    |                    |                    |---+ 1. addToCart   |                    |
+      |                    |                    |                    |                    |                    |   |                |                    |
+      |                    |                    |                    |                    |                    |---+                |                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |                    |                    |                    |                    |<---cart+Metadata---|                    |                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |                    |                    |                    |                    |-----------calculateTotals-------------->|                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |                    |                    |                    |                    |                    |                    |---+ 1.subTotCalc   |
+      |                    |                    |                    |                    |                    |                    |   |                |
+      |                    |                    |                    |                    |                    |                    |   |                |
+      |                    |                    |                    |                    |                    |                    |   |                |
+      |                    |                    |                    |                    |                    |                    |   | 2.getTaxAmnt-->|
+      |                    |                    |                    |                    |                    |                    |   |                |
+      |                    |                    |                    |                    |                    |                    |   |<----taxAmnt----|
+      |                    |                    |                    |                    |                    |                    |   |                |
+      |                    |                    |                    |                    |                    |                    |   |                |
+      |                    |                    |                    |                    |                    |                    |---+ 3.total        |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |                    |                    |                    |                    |<--------returnCartTotals----------------|                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |                    |<--------------------------returnCartTotals-------------------|                    |                    |                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      |<---showUserTotals--|                    |                    |                    |                    |                    |                    |
+      |                    |                    |                    |                    |                    |                    |                    |
+      
+      
+Error Flow
 -------------
 1. Invalid Input Validation:
    Client -> CartService: validateAndAddToCart(product with invalid data)
@@ -221,7 +226,25 @@ SS - Security Support
 | Hiber-Validator | 9.0.0.CR1  |      -      |      -      | 15-Feb-2025  |
 | Lombok          |  1.18.36   |      -      |      -      | 15-Feb-2025  |
 
-[OSS End of Life](https://endoflife.date)
+## Dependency Version Check!
+
+- [OSS End of Life](https://endoflife.date)
+
+## Git Branching Model
+
+Normal flow of code changes between branches.
+`feat-*` -> `dev` -> `int-*` -> `qa-*` -> `stress-*` -> `main`
+
+In the event of a bug that's currently in PROD:
+`hotfix-*` -> `qa-*` -> `stress-*` -> `main`
+
+`hotfix-*` -> `dev`
+
+Following a successful [Git Branching Model](https://nvie.com/posts/a-successful-git-branching-model/) I would be
+adopting the same best practices for this project.
+
+In this project, I will be using the `solution` branch as the default branch for the project. The `main` branch will be
+the production branch. The `solution` branch will be merged into the `main` branch after the code review.
 
 # Executing Tests
 
@@ -253,7 +276,7 @@ Sonarque analysis can be found at: [SonarQube](http://localhost:9000)
 
 ![Jacoco Test Coverage Report](img_2.png)
 
-### Resolution graph for the 4 issues in 30mins (17:19 - 17:49):
+### Resolution graph for the 4 issues:
 
 ![Jacoco Test Coverage Report](img_3.png)
 
@@ -269,7 +292,11 @@ Screenshot below:
 - Fix the ConsolidatedCart: "God Object" syndrome. ❌
 - Spin-up local Sonarqube server for additional code quality checks. ✅
 - Support for different tax rates. ✅
-- Update the Sequence Diagram with the new features. ❓
+- Decoupled tax-calculation from CartCalculator. ✅
+- Decoupled cart-items calculation from Cart. ✅
+- Feature to remove items from an existing Cart.❓
+- Complete the negative testing for the Price-API response.❓
+- Update the Sequence Diagram with the new features.✅
 - Add resilience patterns (Circuit Breaker, Retry): Resilience4j.❓
 - Async Bulk price fetching optimization: Caching layer for price data, & agree with price-api-client on data-refresh
   rate/frequency for Cache-Eviction.❓

@@ -34,7 +34,7 @@ public class CartServiceImpl implements CartService {
             validator.validateData(productIn);    // Validate Client Input Data
             final var price = priceAPIClient.getPrice(productIn.name());    // Get price from Price API
             validator.validateData(new PriceWrapper(price));  // Validate Price Data - Protect CartService from potential API Failures/Bugs.
-            return cartFacade.checkoutAndShowTotals(productIn, price);    // Add product to cart and calculate totals
+            return cartFacade.addToCartAndGetTotals(productIn, price);    // Add product to cart and calculate totals
         } catch (final CartException e) {
             log.error("CartService Error: {}", e.getMessage(), e);
             final CartError cartError = validator.buildErrors(e);

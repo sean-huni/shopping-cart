@@ -40,16 +40,16 @@ class CartFacadeTest {
         @DisplayName("Then calculate totals of Cart")
         void shouldAddProductToCartAndCalculateTotals() {
             // Given
-            cartFacade.checkoutAndShowTotals(new ProductIn("cornflakes", 1), BigDecimal.valueOf(2.52));
-            cartFacade.checkoutAndShowTotals(new ProductIn("cornflakes", 6), BigDecimal.valueOf(2.52));
-            cartFacade.checkoutAndShowTotals(new ProductIn("weetabix", 3), BigDecimal.valueOf(9.98));
-            cartFacade.checkoutAndShowTotals(new ProductIn("cheerios", 3), BigDecimal.valueOf(1.33));
+            cartFacade.addToCartAndGetTotals(new ProductIn("cornflakes", 1), BigDecimal.valueOf(2.52));
+            cartFacade.addToCartAndGetTotals(new ProductIn("cornflakes", 6), BigDecimal.valueOf(2.52));
+            cartFacade.addToCartAndGetTotals(new ProductIn("weetabix", 3), BigDecimal.valueOf(9.98));
+            cartFacade.addToCartAndGetTotals(new ProductIn("cheerios", 3), BigDecimal.valueOf(1.33));
 
             final var productIn = new ProductIn("frosties", 3);
             final var price = BigDecimal.valueOf(3.09);
 
             // When
-            final var consolidatedCart = cartFacade.checkoutAndShowTotals(productIn, price);
+            final var consolidatedCart = cartFacade.addToCartAndGetTotals(productIn, price);
 
             // Then
             assertNotNull(consolidatedCart);
@@ -68,16 +68,16 @@ class CartFacadeTest {
         @DisplayName("Then calculate totals of Cart with all items @100% Discount")
         void shouldAddProductToCartWith100PercentDiscountAndCalculateTotals() {
             // Given
-            cartFacade.checkoutAndShowTotals(new ProductIn("cornflakes", 1), BigDecimal.valueOf(00.00));
-            cartFacade.checkoutAndShowTotals(new ProductIn("cornflakes", 6), BigDecimal.valueOf(00.00));
-            cartFacade.checkoutAndShowTotals(new ProductIn("weetabix", 3), BigDecimal.valueOf(00.00));
-            cartFacade.checkoutAndShowTotals(new ProductIn("cheerios", 3), BigDecimal.valueOf(00.00));
+            cartFacade.addToCartAndGetTotals(new ProductIn("cornflakes", 1), BigDecimal.valueOf(00.00));
+            cartFacade.addToCartAndGetTotals(new ProductIn("cornflakes", 6), BigDecimal.valueOf(00.00));
+            cartFacade.addToCartAndGetTotals(new ProductIn("weetabix", 3), BigDecimal.valueOf(00.00));
+            cartFacade.addToCartAndGetTotals(new ProductIn("cheerios", 3), BigDecimal.valueOf(00.00));
 
             final var productIn = new ProductIn("frosties", 3);
             final var price = BigDecimal.valueOf(00.00);
 
             // When
-            final var consolidatedCart = cartFacade.checkoutAndShowTotals(productIn, price);
+            final var consolidatedCart = cartFacade.addToCartAndGetTotals(productIn, price);
 
             // Then
             assertNotNull(consolidatedCart);
@@ -99,12 +99,12 @@ class CartFacadeTest {
             final var productIn = new ProductIn("cheerios", 3);
             final var price = BigDecimal.valueOf(10.09);
             // When
-            cartFacade.checkoutAndShowTotals(new ProductIn("cornflakes", 1), BigDecimal.valueOf(2.52));
-            cartFacade.checkoutAndShowTotals(new ProductIn("cornflakes", 1), BigDecimal.valueOf(2.52));
-            cartFacade.checkoutAndShowTotals(new ProductIn("weetabix", 3), BigDecimal.valueOf(9.98));
-            cartFacade.checkoutAndShowTotals(new ProductIn("shreddies", 1), BigDecimal.valueOf(17.23));
-            cartFacade.checkoutAndShowTotals(new ProductIn("frosties", 1), BigDecimal.valueOf(4.11));
-            final var consolidatedCart = cartFacade.checkoutAndShowTotals(productIn, price);
+            cartFacade.addToCartAndGetTotals(new ProductIn("cornflakes", 1), BigDecimal.valueOf(2.52));
+            cartFacade.addToCartAndGetTotals(new ProductIn("cornflakes", 1), BigDecimal.valueOf(2.52));
+            cartFacade.addToCartAndGetTotals(new ProductIn("weetabix", 3), BigDecimal.valueOf(9.98));
+            cartFacade.addToCartAndGetTotals(new ProductIn("shreddies", 1), BigDecimal.valueOf(17.23));
+            cartFacade.addToCartAndGetTotals(new ProductIn("frosties", 1), BigDecimal.valueOf(4.11));
+            final var consolidatedCart = cartFacade.addToCartAndGetTotals(productIn, price);
             // Then
             assertNotNull(consolidatedCart);
             assertNotNull(consolidatedCart.totals());
@@ -126,12 +126,12 @@ class CartFacadeTest {
             final var productIn = new ProductIn("cheerios", 3);
             final var price = BigDecimal.valueOf(00.00);
             // When
-            cartFacade.checkoutAndShowTotals(new ProductIn("cornflakes", 1), BigDecimal.valueOf(00.00));
-            cartFacade.checkoutAndShowTotals(new ProductIn("cornflakes", 1), BigDecimal.valueOf(00.00));
-            cartFacade.checkoutAndShowTotals(new ProductIn("weetabix", 3), BigDecimal.valueOf(00.00));
-            cartFacade.checkoutAndShowTotals(new ProductIn("shreddies", 1), BigDecimal.valueOf(00.00));
-            cartFacade.checkoutAndShowTotals(new ProductIn("frosties", 1), BigDecimal.valueOf(00.00));
-            final var consolidatedCart = cartFacade.checkoutAndShowTotals(productIn, price);
+            cartFacade.addToCartAndGetTotals(new ProductIn("cornflakes", 1), BigDecimal.valueOf(00.00));
+            cartFacade.addToCartAndGetTotals(new ProductIn("cornflakes", 1), BigDecimal.valueOf(00.00));
+            cartFacade.addToCartAndGetTotals(new ProductIn("weetabix", 3), BigDecimal.valueOf(00.00));
+            cartFacade.addToCartAndGetTotals(new ProductIn("shreddies", 1), BigDecimal.valueOf(00.00));
+            cartFacade.addToCartAndGetTotals(new ProductIn("frosties", 1), BigDecimal.valueOf(00.00));
+            final var consolidatedCart = cartFacade.addToCartAndGetTotals(productIn, price);
             // Then
             assertNotNull(consolidatedCart);
             assertNotNull(consolidatedCart.totals());
@@ -157,13 +157,12 @@ class CartFacadeTest {
             final var productIn = new ProductIn("cornflakes", 1);
             final var price = BigDecimal.valueOf(2.52);
             // When
-            final var consolidatedCart = cartFacade.checkoutAndShowTotals(productIn, price);
+            final var consolidatedCart = cartFacade.addToCartAndGetTotals(productIn, price);
             // Then
             assertNotNull(consolidatedCart);
             assertNotNull(consolidatedCart.totals());
             assertNull(consolidatedCart.errors());
             assertNull(consolidatedCart.getPriceForProduct("non-existent"));
-//            assertNull(consolidatedCart.getQuantityForProduct("non-existent"));
         }
 
         @Test
@@ -173,7 +172,7 @@ class CartFacadeTest {
             final var productIn = new ProductIn("cornflakes", 1);
             final var price = BigDecimal.valueOf(0.00);
             // When
-            final var consolidatedCart = cartFacade.checkoutAndShowTotals(productIn, price);
+            final var consolidatedCart = cartFacade.addToCartAndGetTotals(productIn, price);
             // Then
             assertNotNull(consolidatedCart);
             assertNotNull(consolidatedCart.totals());

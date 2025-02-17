@@ -54,7 +54,7 @@ class CartServiceTest {
 
         doNothing().when(validator).validateData(new ProductIn("cheerios", 3));
         when(priceAPIClient.getPrice("cheerios")).thenReturn(BigDecimal.valueOf(19.09));
-        when(cartFacade.checkoutAndShowTotals(new ProductIn("cheerios", 3), BigDecimal.valueOf(19.09)))
+        when(cartFacade.addToCartAndGetTotals(new ProductIn("cheerios", 3), BigDecimal.valueOf(19.09)))
                 .thenReturn(consolidatedCart);
     }
 
@@ -87,7 +87,7 @@ class CartServiceTest {
 
         @Test
         void returnCartErrorsWhenAddingToCart() {
-            when(cartFacade.checkoutAndShowTotals(any(), any())).thenThrow(new CartException("Price must be non-negative"));
+            when(cartFacade.addToCartAndGetTotals(any(), any())).thenThrow(new CartException("Price must be non-negative"));
             when(validator.buildErrors(any())).thenReturn(new CartError(400L, VALIDATION_ERROR, null, "Price must be non-negative"));
 
             final ProductIn cheerios = new ProductIn("choco", 9);

@@ -29,7 +29,7 @@ public class CartFacadeImpl implements CartFacade {
      * shopping cart, and the calculated totals including tax, subtotal, and total.
      */
     @Override
-    public ConsolidatedCart checkoutAndShowTotals(final ProductIn productIn, final BigDecimal price) {
+    public ConsolidatedCart addToCartAndGetTotals(final ProductIn productIn, final BigDecimal price) {
         final var shoppingCart = cart.addProduct(productIn, price);
         final var totals = cartCalculator.calculateTotals(shoppingCart);
         return new ConsolidatedCart(null, shoppingCart, totals);

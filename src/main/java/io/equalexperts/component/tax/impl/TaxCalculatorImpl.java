@@ -16,6 +16,11 @@ public class TaxCalculatorImpl implements TaxCalculator {
 
     /**
      * Calculates the tax amount based on the provided subtotal and a predefined sales tax rate.
+     * <p>
+     * It's important to note that rounding-off the sub-total (to 2-decimal place) before calculating the tax amount,
+     * may lead to incorrect results. Hence, the sub-total is rounded-off to 10-decimal places after the tax amount is calculated.
+     * </p>
+     * That way, the accuracy (to approx. 00.01) is still guaranteed, and the final Grand-Total result is rounded-off to 2-decimal places.
      *
      * @param subTotal The subtotal amount for which the tax is to be calculated. Must not be null.
      * @return The calculated tax amount as a BigDecimal.
