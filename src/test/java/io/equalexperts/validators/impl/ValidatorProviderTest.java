@@ -179,7 +179,7 @@ class ValidatorProviderTest {
                 // When validated erroneous data, then a CartException should be thrown
                 final Exception exception = assertThrows(CartException.class, () -> validatorProvider.validateData(pw));
                 assertEquals("PRICE_SERVICE_ERROR", ((PriceServiceException) exception).getTitle());
-                assertEquals("'price': Price must be greater than zero", exception.getMessage().trim());
+                assertEquals("'price': Price should not be less than 0.00", exception.getMessage().trim());
             }
         }
     }

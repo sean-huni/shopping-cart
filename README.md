@@ -286,6 +286,10 @@ Find the Jacoco test coverage report in the unix-cmd: `ls -lah build/reports/jac
 Screenshot below:
 ![Jacoco Test Coverage Report](img.png)
 
+## Final Quality Report
+
+![Final Sonarqube Quality Report](img_5.png)
+
 # Potential Areas of Improvements
 
 - Principle of Least Knowledge in CartFacade: Keep the method calls within the bounded-context of the inner classes. ✅
@@ -296,7 +300,7 @@ Screenshot below:
 - Decoupled tax-calculation from CartCalculator. ✅
 - Decoupled cart-items calculation from Cart. ✅
 - Feature to remove items from an existing Cart.❓
-- Complete the negative testing for the Price-API response.❓
+- Complete the negative testing for the Price-API response.✅
 - Update the Sequence Diagram with the new features.✅
 - Add resilience patterns (Circuit Breaker, Retry): Resilience4j.❓
 - Async Bulk price fetching optimization: Caching layer for price data, & agree with price-api-client on data-refresh

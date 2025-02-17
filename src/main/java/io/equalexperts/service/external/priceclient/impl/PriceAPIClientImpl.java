@@ -2,6 +2,7 @@ package io.equalexperts.service.external.priceclient.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import io.equalexperts.exception.Api400xError;
 import io.equalexperts.exception.HttpAPIException;
 import io.equalexperts.service.external.dto.PriceRespDTO;
@@ -70,9 +71,8 @@ public class PriceAPIClientImpl implements PriceAPIClient {
         // Check response status and return the body
         switch (statusCode) {
             case HttpURLConnection.HTTP_OK -> {
-                final var gsonResp = gson.toJson(response.body());
-                final var priceResp = gson.fromJson(response.body(), PriceRespDTO.class);
-                log.debug("Price response: \n{}", gsonResp);
+                final PriceRespDTO priceResp;
+                priceResp = getPriceRespDTO(response);
                 return priceResp.price();
             }
             case HttpURLConnection.HTTP_NOT_FOUND -> {
@@ -87,9 +87,29 @@ public class PriceAPIClientImpl implements PriceAPIClient {
             }
             default -> {
                 final var defaultMsg = "Failed to fetch product details. HTTP status: %d".formatted(response.statusCode());
-                log.warn("Unexpected status code: {}. {}", response.statusCode(), defaultMsg);
+                log.error("Unexpected status code: {}. {}", response.statusCode(), defaultMsg);
                 throw new HttpAPIException(defaultMsg);
             }
+        }
+    }
+
+    /**
+     * Extracts and transforms the HTTP response into a PriceRespDTO object.
+     * Parses the body of the HTTP response as a JSON string and converts it into a PriceRespDTO.
+     * Logs the response body or the error in case of failure.
+     *
+     * @param response the HTTP response containing the data to be parsed and converted.
+     * @return the PriceRespDTO object constructed from the HTTP response body.
+     * @throws HttpAPIException if the HTTP response body cannot be processed due to its format or other errors.
+     */
+    private PriceRespDTO getPriceRespDTO(HttpResponse<String> response) {
+        try {
+            log.debug("Price response: \n{}", response.body());
+            return gson.fromJson(response.body(), PriceRespDTO.class);
+        } catch (JsonSyntaxException e) {
+            final var defaultMsg = "Failed to extract Response from Body. HTTP.Status: %d. HTTP.Body %s".formatted(response.statusCode(), e.getMessage());
+            log.error("Malformed Response Body: Status: {}. Message: {}", response.statusCode(), defaultMsg);
+            throw new HttpAPIException(defaultMsg, e);
         }
     }
 }
