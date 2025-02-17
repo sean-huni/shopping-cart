@@ -1,9 +1,9 @@
 package io.equalexperts.service.internal;
 
-import io.equalexperts.model.ConsolidatedCart;
 import io.equalexperts.model.ProductIn;
+import io.equalexperts.view.CartSummaryView;
 
 public interface CartService {
 
-    ConsolidatedCart validateAndAddToCart(ProductIn productIn);
+    CartSummaryView validateAndAddToCart(ProductIn productIn);
 }

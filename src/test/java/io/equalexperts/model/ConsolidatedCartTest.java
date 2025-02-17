@@ -9,8 +9,6 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -29,101 +27,41 @@ class ConsolidatedCartTest {
     class WhenConsolidatedCartIsNullNegativeScenarios {
 
         @Test
-        @DisplayName("Then getQuantityForProduct returns 0")
+        @DisplayName("Then getQuantityForProduct returns null when cart is null")
+
         void shouldReturnZeroForGetQuantityForProduct() {
             // Given
-            final String productName = "cornflakes";
-
             // When
-            final int quantity = consolidatedCart.getQuantityForProduct(productName);
+            final var nullCart = consolidatedCart.shoppingCart();
 
             // Then
-            assertEquals(0, quantity);
+            assertNull(nullCart);
         }
 
         @Test
         @DisplayName("Then getNonExistentQuantityForProduct returns 0")
         void shouldReturnZeroForGetNonExistentQuantityForProduct() {
             // Given
-            final var existingItem = Map.of("cheerios", new ItemMetadata(BigDecimal.valueOf(12.34), 3));
+            final var shoppingCart = Map.of("cheerios", new ItemMetadata(BigDecimal.valueOf(12.34), 3));
 
             final String productName = "non-existent-product";
-            consolidatedCart = new ConsolidatedCart(null, existingItem, null);
+            consolidatedCart = new ConsolidatedCart(null, shoppingCart, null);
 
             // When
-            final int quantity = consolidatedCart.getQuantityForProduct(productName);
+            final var quantity = consolidatedCart.shoppingCart().get(productName);
 
             // Then
-            assertEquals(0, quantity);
+            assertNull(quantity);
         }
 
         @Test
-        @DisplayName("Then getTotalItemsCount returns 0")
+        @DisplayName("Then getTotalItemsCount returns null when cart is null")
         void shouldReturnZeroForGetTotalItemsCount() {
             // When
-            final int totalItemsCount = consolidatedCart.getTotalItemsCount();
+            final var totalItems = consolidatedCart.shoppingCart();
 
             // Then
-            assertEquals(0, totalItemsCount);
-        }
-
-        @Test
-        @DisplayName("Then getCategorisedItemCount returns 0")
-        void shouldReturnZeroForGetCategorisedItemCount() {
-            // When
-            final int categorisedItemCount = consolidatedCart.getCategorisedItemCount();
-
-            // Then
-            assertEquals(0, categorisedItemCount);
-        }
-
-        @Test
-        @DisplayName("Then getPriceForProduct returns NULL")
-        void shouldReturnNullForProduct() {
-            // Then
-            assertNull(consolidatedCart.getPriceForProduct("demo"));
-        }
-
-        @Test
-        @DisplayName("Then containsProduct Non-Existant Product Return False")
-        void shouldReturnFalse() {
-            // Given
-            final var existingItem = Map.of("conflakes", new ItemMetadata(BigDecimal.valueOf(2.34), 2));
-
-            consolidatedCart = new ConsolidatedCart(null, null, null);
-            // When
-            final var isAvailable = consolidatedCart.containsProduct("non-existent-product");
-
-            // Then
-            assertFalse(isAvailable);
-        }
-
-        @Test
-        @DisplayName("Then containsProduct Existant Product Return False")
-        void shouldReturnExistentProductFalse() {
-            // Given
-            final var existingItem = Map.of("conflakes", new ItemMetadata(BigDecimal.valueOf(2.34), 2));
-
-            consolidatedCart = new ConsolidatedCart(null, existingItem, null);
-            // When
-            final var isAvailable = consolidatedCart.containsProduct("conflakes");
-
-            // Then
-            assertTrue(isAvailable);
-        }
-
-        @Test
-        @DisplayName("Then containsProduct Non-Existant Product Return False")
-        void shouldNonExistentReturnFalse() {
-            // Given
-            final var existingItem = Map.of("conflakes", new ItemMetadata(BigDecimal.valueOf(2.34), 2));
-
-            consolidatedCart = new ConsolidatedCart(null, existingItem, null);
-            // When
-            final var isAvailable = consolidatedCart.containsProduct("non-existent-product");
-
-            // Then
-            assertFalse(isAvailable);
+            assertNull(totalItems);
         }
     }
 
@@ -132,17 +70,17 @@ class ConsolidatedCartTest {
     class WhenConsolidatedCartIsNotNull {
 
         @Test
-        @DisplayName("Then containsProduct returns True")
+        @DisplayName("Then containsProduct returns True for an existing product")
         void shouldReturnTrue() {
             // Given
             final var existingItem = Map.of("conflakes", new ItemMetadata(BigDecimal.valueOf(2.34), 2));
 
             consolidatedCart = new ConsolidatedCart(null, existingItem, null);
             // When
-            final var isAvailable = consolidatedCart.containsProduct("conflakes");
+            final var isAvailable = consolidatedCart.shoppingCart().get("conflakes");
 
             // Then
-            assertTrue(isAvailable);
+            assertTrue(isAvailable.getQuantity() > 0);
         }
     }
 }

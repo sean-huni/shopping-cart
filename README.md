@@ -288,8 +288,9 @@ Screenshot below:
 
 # Potential Areas of Improvements
 
-- Principle of Least Knowledge in CartFacade: Keep the method calls within the bounded-context of the inner classes. ❌
-- Fix the ConsolidatedCart: "God Object" syndrome. ❌
+- Principle of Least Knowledge in CartFacade: Keep the method calls within the bounded-context of the inner classes. ✅
+   - Added Cart-Views to enforce Least Knowledge Principle by making use of Command Query Separation (CQS) pattern. ✅
+   - Fix the ConsolidatedCart: "God Object" syndrome. ✅
 - Spin-up local Sonarqube server for additional code quality checks. ✅
 - Support for different tax rates. ✅
 - Decoupled tax-calculation from CartCalculator. ✅

@@ -23,8 +23,8 @@ import java.math.BigDecimal;
 
 import static io.equalexperts.constant.ErrorConstants.NOT_FOUND_ERROR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("int") //Integration test
@@ -49,24 +49,31 @@ class CartServiceIntTest {
             final var productIn = new ProductIn("cornflakes", 3);
 
             // When
-            final var consolidatedCart = cartService.validateAndAddToCart(productIn);
+            final var cartSummaryView = cartService.validateAndAddToCart(productIn);
 
             // Then
-            assertNull(consolidatedCart.errors());
-            assertNotNull(consolidatedCart.shoppingCart());
-            assertNotNull(consolidatedCart.totals());
+            assertFalse(cartSummaryView.errors().hasErrors());
+            assertNotNull(cartSummaryView.items());
+            assertNotNull(cartSummaryView.totals());
 
-            assertEquals(1, consolidatedCart.getCategorisedItemCount());
-            assertNotNull(consolidatedCart.getPriceForProduct("cornflakes"));
-            assertTrue(consolidatedCart.containsProduct("cornflakes"));
-            assertEquals(1, consolidatedCart.getPriceForProduct("cornflakes").compareTo(BigDecimal.valueOf(0)));  // Suitable Adaptable Int-Test.
-            assertEquals(3, consolidatedCart.getQuantityForProduct("cornflakes"));
+            final var cartItem = cartSummaryView.items().stream()
+                    .filter(item -> item.productName().equals("cornflakes")).findAny().get();
+
+            final var cartTotals = cartSummaryView.totals();
+
+            assertEquals(1, cartSummaryView.quantities().categoryItemCount());
+            assertNotNull(cartItem);
+            assertNotNull(cartItem.price());
+            assertEquals(3, cartItem.quantity());
+            assertEquals("cornflakes", cartItem.productName());
+            assertTrue(cartItem.price().compareTo(BigDecimal.ZERO) > 0);  // Suitable Adaptable Int-Test.
+            assertEquals(3, cartSummaryView.quantities().totalItemsCount()); //Product Quantity
 
             // Warning: The following asserted-values are static and will make the tests rigid.
-            assertEquals(2.52, consolidatedCart.getPriceForProduct("cornflakes").doubleValue());
-            assertEquals(7.56, consolidatedCart.totals().subTotal().doubleValue());
-            assertEquals(0.95, consolidatedCart.totals().tax().doubleValue());
-            assertEquals(8.51, consolidatedCart.totals().total().doubleValue());
+            assertEquals(2.52, cartItem.price().doubleValue());
+            assertEquals(7.56, cartTotals.subTotal().doubleValue());
+            assertEquals(0.95, cartTotals.tax().doubleValue());
+            assertEquals(8.51, cartTotals.total().doubleValue());
         }
 
         @Test
@@ -81,15 +88,16 @@ class CartServiceIntTest {
 
             // When
             final var consolidatedCart = cartService.validateAndAddToCart(new ProductIn("weetabix", 0));
+            final var cornflakesCartItem = consolidatedCart.items().stream().filter(item -> item.productName().equals("cornflakes")).findAny().get();
 
             // Then
-            assertNull(consolidatedCart.errors());
-            assertNotNull(consolidatedCart.shoppingCart());
+            assertFalse(consolidatedCart.errors().hasErrors());
+            assertNotNull(consolidatedCart.items());
             assertNotNull(consolidatedCart.totals());
-            assertNotNull(consolidatedCart.getPriceForProduct("cornflakes"));
-            assertTrue(consolidatedCart.containsProduct("cornflakes"));
+            assertNotNull(cornflakesCartItem.price());
+            assertEquals("cornflakes", cornflakesCartItem.productName());
 
-            assertEquals(5, consolidatedCart.getCategorisedItemCount());
+            assertEquals(5, consolidatedCart.items().size());
             assertEquals(64.85, consolidatedCart.totals().tax().doubleValue());
             assertEquals(518.81, consolidatedCart.totals().subTotal().doubleValue());
             assertEquals(583.66, consolidatedCart.totals().total().doubleValue());
@@ -101,7 +109,7 @@ class CartServiceIntTest {
     class ValidateAndAddToCartNegativeScenarios {
 
         @Test
-        @DisplayName("When adding a non-existent product with negative")
+        @DisplayName("Then fail to add a non-existent product with a negative price")
         void thenAddProductWithNegativePrice() {
             // Given
             final var productIn = new ProductIn("chocolate", 1); //Chocolate does not exist in the Price API
@@ -111,16 +119,16 @@ class CartServiceIntTest {
 
             // Then
             assertNotNull(consolidatedCart.errors());
-            assertNull(consolidatedCart.shoppingCart());
-            assertNull(consolidatedCart.totals());
-            assertNull(consolidatedCart.shoppingCart());
+            assertEquals(0, consolidatedCart.quantities().totalItemsCount());
+            assertFalse(consolidatedCart.totals().hasAmount());
             assertEquals(404L, consolidatedCart.errors().statusCode());
-            assertEquals("Product chocolate not found", consolidatedCart.errors().message());
+            assertTrue(consolidatedCart.errors().hasErrors());
+            assertEquals("Product chocolate not found", consolidatedCart.errors().errorMessage());
             assertEquals(NOT_FOUND_ERROR, consolidatedCart.errors().errorType());
         }
 
         @Test
-        @DisplayName("When adding a product with negative quantity")
+        @DisplayName("Then fail to add a product with a negative quantity due to validation")
         void thenAddProductWithNegativeQuantity() {
             // Given
             final var productIn = new ProductIn("cornflakes", -1);
@@ -128,16 +136,17 @@ class CartServiceIntTest {
             // When
             final var consolidatedCart = cartService.validateAndAddToCart(productIn);
 
+            final var cartTotals = consolidatedCart.totals();
+
             // Then
             assertNotNull(consolidatedCart.errors());
-            assertNull(consolidatedCart.shoppingCart());
-            assertNull(consolidatedCart.totals());
+            assertFalse(cartTotals.hasAmount());
             assertEquals(400L, consolidatedCart.errors().statusCode());
-            assertEquals("VALIDATION_ERROR", consolidatedCart.errors().message());
+            assertEquals("VALIDATION_ERROR", consolidatedCart.errors().errorMessage());
         }
 
         @Test
-        @DisplayName("When adding a product with invalid name")
+        @DisplayName("Then fail to add a product with an invalid name due to naming constraints")
         void thenAddProductWithInvalidName() {
             // Given
             final var productIn = new ProductIn("invalid-product", 1);
@@ -147,11 +156,11 @@ class CartServiceIntTest {
 
             // Then
             assertNotNull(consolidatedCart.errors());
-            assertNull(consolidatedCart.shoppingCart());
-            assertNull(consolidatedCart.totals());
+            assertEquals(0, consolidatedCart.quantities().totalItemsCount());
+            assertFalse(consolidatedCart.totals().hasAmount());
             assertEquals(404L, consolidatedCart.errors().statusCode());
             assertEquals(NOT_FOUND_ERROR, consolidatedCart.errors().errorType());
-            assertEquals("Product invalid-product not found", consolidatedCart.errors().message());
+            assertEquals("Product invalid-product not found", consolidatedCart.errors().errorMessage());
         }
     }
 }

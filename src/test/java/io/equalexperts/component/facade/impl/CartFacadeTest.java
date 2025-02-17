@@ -6,6 +6,7 @@ import io.equalexperts.component.cart.impl.CartImpl;
 import io.equalexperts.component.facade.CartFacade;
 import io.equalexperts.component.tax.TaxCalculator;
 import io.equalexperts.component.tax.impl.TaxCalculatorImpl;
+import io.equalexperts.model.ItemMetadata;
 import io.equalexperts.model.ProductIn;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -113,10 +114,11 @@ class CartFacadeTest {
 
             assertNotNull(itemsInCart);
             assertNull(consolidatedCart.errors());
-            assertEquals(5, consolidatedCart.getCategorisedItemCount());    // Categories of items in cart
-            assertTrue(consolidatedCart.containsProduct("cornflakes")); // Frequency of Product in Cart
-            assertEquals(2, consolidatedCart.getQuantityForProduct("cornflakes")); // Frequency of Product in Cart
-            assertEquals(10, consolidatedCart.getTotalItemsCount()); // Total items in cart
+            assertEquals(5, consolidatedCart.shoppingCart().size());    // Categories of items in cart
+            assertTrue(consolidatedCart.shoppingCart().containsKey("cornflakes")); // Frequency of Product in Cart
+            assertEquals(2, consolidatedCart.shoppingCart().get("cornflakes").getQuantity()); // Frequency of Product in Cart
+            assertEquals(10, consolidatedCart.shoppingCart().values().stream()
+                    .mapToInt(ItemMetadata::getQuantity).sum()); // Total items in cart
         }
 
         @Test
@@ -140,9 +142,10 @@ class CartFacadeTest {
 
             assertNotNull(itemsInCart);
             assertNull(consolidatedCart.errors());
-            assertEquals(5, consolidatedCart.getCategorisedItemCount());    // Categories of items in cart
-            assertEquals(2, consolidatedCart.getQuantityForProduct("cornflakes")); // Frequency of Product in Cart
-            assertEquals(10, consolidatedCart.getTotalItemsCount()); // Total items in cart
+            assertEquals(5, consolidatedCart.shoppingCart().size());    // Categories of items in cart
+            assertEquals(2, consolidatedCart.shoppingCart().get("cornflakes").getQuantity()); // Frequency of Product in Cart
+            assertEquals(10, consolidatedCart.shoppingCart().values().stream()
+                    .mapToInt(ItemMetadata::getQuantity).sum()); // Total items in cart
         }
     }
 
@@ -158,11 +161,12 @@ class CartFacadeTest {
             final var price = BigDecimal.valueOf(2.52);
             // When
             final var consolidatedCart = cartFacade.addToCartAndGetTotals(productIn, price);
+            final var nonExistentItem = consolidatedCart.shoppingCart().get("non-existent");
             // Then
             assertNotNull(consolidatedCart);
             assertNotNull(consolidatedCart.totals());
             assertNull(consolidatedCart.errors());
-            assertNull(consolidatedCart.getPriceForProduct("non-existent"));
+            assertNull(nonExistentItem);
         }
 
         @Test
@@ -173,14 +177,16 @@ class CartFacadeTest {
             final var price = BigDecimal.valueOf(0.00);
             // When
             final var consolidatedCart = cartFacade.addToCartAndGetTotals(productIn, price);
+            final var cornflakesItem = consolidatedCart.shoppingCart().get("cornflakes");
             // Then
             assertNotNull(consolidatedCart);
             assertNotNull(consolidatedCart.totals());
             assertNull(consolidatedCart.errors());
-            assertEquals(0.00, consolidatedCart.getPriceForProduct("cornflakes").doubleValue());
-            assertEquals(1, consolidatedCart.getQuantityForProduct("cornflakes"));
-            assertEquals(1, consolidatedCart.getCategorisedItemCount());
-            assertEquals(1, consolidatedCart.getTotalItemsCount());
+            assertEquals(0.00, cornflakesItem.getPrice().doubleValue());
+            assertEquals(1, cornflakesItem.getQuantity());
+            assertEquals(1, consolidatedCart.shoppingCart().size());
+            assertEquals(1, consolidatedCart.shoppingCart().values().stream()
+                    .mapToInt(ItemMetadata::getQuantity).sum());
         }
     }
 }
