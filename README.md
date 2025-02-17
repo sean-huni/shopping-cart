@@ -82,6 +82,14 @@ the assigned task, and shouldn’t be overly complex. We prefer simple, well tes
 The price API is an existing API that returns the price details for a product, identified by it's name. The shopping
 cart should integrate with the price API to retrieve product prices.
 
+# Docker Compose
+
+To spin up the test-tools required for Code-Quality Metrics. Run the following command:
+
+- Spin-up ` docker compose -f src/test/resources/docker/test-tools.yml up -d`
+- Tear-down `docker compose -f src/test/resources/docker/test-tools.yml down --volumes`
+- Release resource `docker compose -f src/test/resources/docker/test-tools.yml down -v --remove-orphans`
+
 ## Assumptions & Design Decisions
 
 1. API Characteristics
