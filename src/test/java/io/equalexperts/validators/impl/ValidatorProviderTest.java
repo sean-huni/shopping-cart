@@ -30,11 +30,11 @@ class ValidatorProviderTest {
 
     @Nested
     @DisplayName("When validating ProductIn")
-    class whenValidatingProductIn {
+    class WhenValidatingProductIn {
 
         @Nested
         @DisplayName("Positive Scenarios")
-        class whenValidateDataIsCalledPositiveScenarios {
+        class WhenValidateDataIsCalledPositiveScenarios {
             @Test
             @DisplayName("Then successfully validated ProductIn")
             void shouldValidateData() {
@@ -48,7 +48,7 @@ class ValidatorProviderTest {
 
         @Nested
         @DisplayName("Negative Scenarios")
-        class whenValidateDataIsCalledNegativeScenarios {
+        class WhenValidateDataIsCalledNegativeScenarios {
             @Test
             @DisplayName("Then should throw CartException: ProductName less than 3 characters")
             void shouldThrowErroneousEmptyProductName() {
@@ -149,11 +149,11 @@ class ValidatorProviderTest {
 
     @Nested
     @DisplayName("When validating Price")
-    class whenValidatingPriceWrapper {
+    class WhenValidatingPriceWrapper {
 
         @Nested
         @DisplayName("Positive Scenarios")
-        class whenValidatePriceWrapperPositiveScenarios {
+        class WhenValidatePriceWrapperPositiveScenarios {
 
             @Test
             @DisplayName("Then successfully validated PriceWrapper")
@@ -168,7 +168,7 @@ class ValidatorProviderTest {
 
         @Nested
         @DisplayName("Negative Scenarios")
-        class whenValidatePriceWrapperNegativeScenarios {
+        class WhenValidatePriceWrapperNegativeScenarios {
 
             @Test
             @DisplayName("Then should throw CartException:  Price must be greater than zero")

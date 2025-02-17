@@ -66,8 +66,8 @@ class CartServiceTest {
             final ProductIn cheerios = new ProductIn("cheerios", 3);
             final var consolidatedCart = cartService.validateAndAddToCart(cheerios);
 
-            assertTrue(consolidatedCart.shoppingCart().containsKey("cheerios"));
-            assertEquals(BigDecimal.valueOf(12.34).doubleValue(), consolidatedCart.shoppingCart().get("cheerios").getPrice().doubleValue());
+            assertTrue(consolidatedCart.containsProduct("cheerios"));
+            assertEquals(BigDecimal.valueOf(12.34).doubleValue(), consolidatedCart.getPriceForProduct("cheerios").doubleValue());
         }
     }
 

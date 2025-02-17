@@ -266,8 +266,10 @@ Screenshot below:
 # Potential Areas of Improvements
 
 - Principle of Least Knowledge in CartFacade: Keep the method calls within the bounded-context of the inner classes. ❌
+- Fix the ConsolidatedCart: "God Object" syndrome. ❌
 - Spin-up local Sonarqube server for additional code quality checks. ✅
 - Support for different tax rates. ✅
+- Update the Sequence Diagram with the new features. ❓
 - Add resilience patterns (Circuit Breaker, Retry): Resilience4j.❓
 - Async Bulk price fetching optimization: Caching layer for price data, & agree with price-api-client on data-refresh
   rate/frequency for Cache-Eviction.❓

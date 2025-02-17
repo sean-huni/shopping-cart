@@ -36,7 +36,7 @@ class PriceAPIClientTest {
 
     @Nested
     @DisplayName("When getPrice is called - Positive Scenarios")
-    class whenGetPriceIsCalledPositiveScenarios {
+    class WhenGetPriceIsCalledPositiveScenarios {
         @Test
         @DisplayName("Then the price of cheerios should be 199.39")
         void shouldReturnCorrectPriceForCheerios() {
@@ -51,7 +51,7 @@ class PriceAPIClientTest {
 
     @Nested
     @DisplayName("When getPrice is called - Negative Scenarios")
-    class whenGetPriceIsCalledNegativeScenarios {
+    class WhenGetPriceIsCalledNegativeScenarios {
         @Test
         @DisplayName("Then the price of cheerios should be 199.39")
         void shouldReturnCorrectPriceForCheerios() {

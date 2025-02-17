@@ -19,7 +19,7 @@ class TaxCalculatorTest {
 
     @Nested
     @DisplayName("When calculateTaxAmount is called - Positive")
-    class whenCalculateTaxAmountIsCalledPositive {
+    class WhenCalculateTaxAmountIsCalledPositive {
         @Test
         @DisplayName("Then the tax amount should be calculated")
         void shouldCalculateTaxAmount() {
@@ -35,7 +35,7 @@ class TaxCalculatorTest {
 
     @Nested
     @DisplayName("When calculateTaxAmount is called - Negative")
-    class whenCalculateTaxAmountIsCalledNegative {
+    class WhenCalculateTaxAmountIsCalledNegative {
         @Test
         @DisplayName("Then the negative tax amount should fail")
         void shouldFailNegativeTaxRate() {

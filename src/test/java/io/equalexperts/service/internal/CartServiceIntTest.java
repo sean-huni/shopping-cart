@@ -56,14 +56,14 @@ class CartServiceIntTest {
             assertNotNull(consolidatedCart.shoppingCart());
             assertNotNull(consolidatedCart.totals());
 
-            assertEquals(1, consolidatedCart.shoppingCart().size());
-            assertNotNull(consolidatedCart.shoppingCart().get("cornflakes").getPrice());
-            assertTrue(consolidatedCart.shoppingCart().containsKey("cornflakes"));
-            assertEquals(1, consolidatedCart.shoppingCart().get("cornflakes").getPrice().compareTo(BigDecimal.valueOf(0)));  // Suitable Adaptable Int-Test.
-            assertEquals(3, consolidatedCart.shoppingCart().get("cornflakes").getQuantity());
+            assertEquals(1, consolidatedCart.getCategorisedItemCount());
+            assertNotNull(consolidatedCart.getPriceForProduct("cornflakes"));
+            assertTrue(consolidatedCart.containsProduct("cornflakes"));
+            assertEquals(1, consolidatedCart.getPriceForProduct("cornflakes").compareTo(BigDecimal.valueOf(0)));  // Suitable Adaptable Int-Test.
+            assertEquals(3, consolidatedCart.getQuantityForProduct("cornflakes"));
 
             // Warning: The following asserted-values are static and will make the tests rigid.
-            assertEquals(2.52, consolidatedCart.shoppingCart().get("cornflakes").getPrice().doubleValue());
+            assertEquals(2.52, consolidatedCart.getPriceForProduct("cornflakes").doubleValue());
             assertEquals(7.56, consolidatedCart.totals().subTotal().doubleValue());
             assertEquals(0.95, consolidatedCart.totals().tax().doubleValue());
             assertEquals(8.51, consolidatedCart.totals().total().doubleValue());
@@ -86,10 +86,10 @@ class CartServiceIntTest {
             assertNull(consolidatedCart.errors());
             assertNotNull(consolidatedCart.shoppingCart());
             assertNotNull(consolidatedCart.totals());
-            assertNotNull(consolidatedCart.shoppingCart().get("cornflakes").getPrice());
-            assertTrue(consolidatedCart.shoppingCart().containsKey("cornflakes"));
+            assertNotNull(consolidatedCart.getPriceForProduct("cornflakes"));
+            assertTrue(consolidatedCart.containsProduct("cornflakes"));
 
-            assertEquals(5, consolidatedCart.shoppingCart().size());
+            assertEquals(5, consolidatedCart.getCategorisedItemCount());
             assertEquals(64.85, consolidatedCart.totals().tax().doubleValue());
             assertEquals(518.81, consolidatedCart.totals().subTotal().doubleValue());
             assertEquals(583.66, consolidatedCart.totals().total().doubleValue());

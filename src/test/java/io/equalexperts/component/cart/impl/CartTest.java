@@ -20,7 +20,7 @@ class CartTest {
 
     @Nested
     @DisplayName("When addProduct is called - Positive Scenarios")
-    class whenAddProductIsCalledPositiveScenarios {
+    class WhenAddProductIsCalledPositiveScenarios {
 
         @Test
         @DisplayName("Then the product should be added to the cart")
@@ -97,7 +97,7 @@ class CartTest {
 
     @Nested
     @DisplayName("When addProduct is called - Negative Scenarios")
-    class whenAddProductIsCalledNegativeScenarios {
+    class WhenAddProductIsCalledNegativeScenarios {
 
         @Test
         @DisplayName("Then the product should not be added to the cart")
