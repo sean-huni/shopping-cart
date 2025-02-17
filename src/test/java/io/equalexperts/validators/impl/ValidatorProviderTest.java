@@ -29,14 +29,14 @@ class ValidatorProviderTest {
     private final ValidatorProvider validatorProvider = new ValidatorProviderImpl();
 
     @Nested
-    @DisplayName("When validating ProductIn")
+    @DisplayName("When validating ProductIn data model")
     class WhenValidatingProductIn {
 
         @Nested
         @DisplayName("Positive Scenarios")
         class WhenValidateDataIsCalledPositiveScenarios {
             @Test
-            @DisplayName("Then successfully validated ProductIn")
+            @DisplayName("Then ProductIn should be successfully validated with valid data")
             void shouldValidateData() {
                 // Given
                 final ProductIn productIn = new ProductIn("cheerios", 3);
@@ -148,7 +148,7 @@ class ValidatorProviderTest {
     }
 
     @Nested
-    @DisplayName("When validating Price")
+    @DisplayName("When validating ProductIn data model")
     class WhenValidatingPriceWrapper {
 
         @Nested

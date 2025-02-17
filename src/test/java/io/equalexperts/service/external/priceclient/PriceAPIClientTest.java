@@ -38,7 +38,7 @@ class PriceAPIClientTest {
     @DisplayName("When getPrice is called - Positive Scenarios")
     class WhenGetPriceIsCalledPositiveScenarios {
         @Test
-        @DisplayName("Then the price of cheerios should be 199.39")
+        @DisplayName("Then the price of cheerios should be 199.09")
         void shouldReturnCorrectPriceForCheerios() {
             // Given
             final var productName = "cheerios";
@@ -53,7 +53,7 @@ class PriceAPIClientTest {
     @DisplayName("When getPrice is called - Negative Scenarios")
     class WhenGetPriceIsCalledNegativeScenarios {
         @Test
-        @DisplayName("Then the price of cheerios should be 199.39")
+        @DisplayName("Then the price of cheerios should be 199.09")
         void shouldReturnCorrectPriceForCheerios() {
             // Given
             final var productName = "cheerios";

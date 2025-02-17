@@ -47,7 +47,7 @@ class TaxCalculatorTest {
         }
 
         @Test
-        @DisplayName("Then the Sub- amount should be calculated")
+        @DisplayName("Then the negative sub-total should fail")
         void shouldFailNegativeSubtotal() {
             taxCalculator = new TaxCalculatorImpl(BigDecimal.valueOf(15.599)); // @15.599% tax
             // Given

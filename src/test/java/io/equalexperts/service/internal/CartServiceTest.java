@@ -66,8 +66,10 @@ class CartServiceTest {
             final ProductIn cheerios = new ProductIn("cheerios", 3);
             final var consolidatedCart = cartService.validateAndAddToCart(cheerios);
 
-            assertTrue(consolidatedCart.containsProduct("cheerios"));
-            assertEquals(BigDecimal.valueOf(12.34).doubleValue(), consolidatedCart.getPriceForProduct("cheerios").doubleValue());
+            final var cheeriosItem = consolidatedCart.items().stream().filter(i -> i.productName().equals("cheerios")).findAny().get();
+
+            assertEquals("cheerios", cheeriosItem.productName());
+            assertEquals(12.34, cheeriosItem.price().doubleValue());
         }
     }
 
@@ -82,7 +84,8 @@ class CartServiceTest {
             final ProductIn cheerios = new ProductIn("cheerios", 3);
 
             final var resp = cartService.validateAndAddToCart(cheerios);
-            assertEquals("Internal Server Error", resp.errors().message());
+            assertTrue(resp.errors().hasErrors());
+            assertEquals("Internal Server Error", resp.errors().errorMessage());
         }
 
         @Test
@@ -93,7 +96,9 @@ class CartServiceTest {
             final ProductIn cheerios = new ProductIn("choco", 9);
 
             final var cartException = cartService.validateAndAddToCart(cheerios);
-            assertEquals("Price must be non-negative", cartException.errors().message());
+
+            assertTrue(cartException.errors().hasErrors());
+            assertEquals("Price must be non-negative", cartException.errors().errorMessage());
         }
 
         @Test
@@ -109,8 +114,9 @@ class CartServiceTest {
             final var response = cartService.validateAndAddToCart(productIn);
 
             // Then
+            assertTrue(response.errors().hasErrors());
             assertEquals(404, response.errors().statusCode()); // Verify that the error code matches
-            assertEquals("Product %s not found".formatted(productName), response.errors().message()); // Verify the error message
+            assertEquals("Product %s not found".formatted(productName), response.errors().errorMessage()); // Verify the error message
         }
     }
 }

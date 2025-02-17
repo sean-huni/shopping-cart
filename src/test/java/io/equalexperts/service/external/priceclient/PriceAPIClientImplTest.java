@@ -86,7 +86,7 @@ class PriceAPIClientImplTest {
         }
 
         @Test
-        @DisplayName("Then handle IO exception - Verify Mock Invocation")
+        @DisplayName("Then handle IO exception gracefully - Verify Mock Invocation")
         void handleIOException() throws Exception {
             // Given
             when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))

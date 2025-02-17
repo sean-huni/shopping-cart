@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @DisplayName("Unit-Tests - Given ItemMetadata")
 class ItemMetadataTest {
 
-    @DisplayName("When creating ItemMetadata")
+    @DisplayName("When creating ItemMetadata and adding quantity")
     @Test
     void shouldCreateItemMetadata() {
         // Given
