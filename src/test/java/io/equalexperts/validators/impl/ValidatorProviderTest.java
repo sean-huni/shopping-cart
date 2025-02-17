@@ -29,14 +29,14 @@ class ValidatorProviderTest {
     private final ValidatorProvider validatorProvider = new ValidatorProviderImpl();
 
     @Nested
-    @DisplayName("When validating ProductIn")
-    class whenValidatingProductIn {
+    @DisplayName("When validating ProductIn data model")
+    class WhenValidatingProductIn {
 
         @Nested
         @DisplayName("Positive Scenarios")
-        class whenValidateDataIsCalledPositiveScenarios {
+        class WhenValidateDataIsCalledPositiveScenarios {
             @Test
-            @DisplayName("Then successfully validated ProductIn")
+            @DisplayName("Then ProductIn should be successfully validated with valid data")
             void shouldValidateData() {
                 // Given
                 final ProductIn productIn = new ProductIn("cheerios", 3);
@@ -48,7 +48,7 @@ class ValidatorProviderTest {
 
         @Nested
         @DisplayName("Negative Scenarios")
-        class whenValidateDataIsCalledNegativeScenarios {
+        class WhenValidateDataIsCalledNegativeScenarios {
             @Test
             @DisplayName("Then should throw CartException: ProductName less than 3 characters")
             void shouldThrowErroneousEmptyProductName() {
@@ -148,12 +148,12 @@ class ValidatorProviderTest {
     }
 
     @Nested
-    @DisplayName("When validating Price")
-    class whenValidatingPriceWrapper {
+    @DisplayName("When validating ProductIn data model")
+    class WhenValidatingPriceWrapper {
 
         @Nested
         @DisplayName("Positive Scenarios")
-        class whenValidatePriceWrapperPositiveScenarios {
+        class WhenValidatePriceWrapperPositiveScenarios {
 
             @Test
             @DisplayName("Then successfully validated PriceWrapper")
@@ -168,7 +168,7 @@ class ValidatorProviderTest {
 
         @Nested
         @DisplayName("Negative Scenarios")
-        class whenValidatePriceWrapperNegativeScenarios {
+        class WhenValidatePriceWrapperNegativeScenarios {
 
             @Test
             @DisplayName("Then should throw CartException:  Price must be greater than zero")
@@ -179,7 +179,7 @@ class ValidatorProviderTest {
                 // When validated erroneous data, then a CartException should be thrown
                 final Exception exception = assertThrows(CartException.class, () -> validatorProvider.validateData(pw));
                 assertEquals("PRICE_SERVICE_ERROR", ((PriceServiceException) exception).getTitle());
-                assertEquals("'price': Price must be greater than zero", exception.getMessage().trim());
+                assertEquals("'price': Price should not be less than 0.00", exception.getMessage().trim());
             }
         }
     }

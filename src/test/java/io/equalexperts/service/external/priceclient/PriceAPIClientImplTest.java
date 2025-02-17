@@ -22,6 +22,8 @@ import java.net.http.HttpResponse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -86,7 +88,7 @@ class PriceAPIClientImplTest {
         }
 
         @Test
-        @DisplayName("Then handle IO exception - Verify Mock Invocation")
+        @DisplayName("Then handle IO exception gracefully - Verify Mock Invocation")
         void handleIOException() throws Exception {
             // Given
             when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
@@ -149,6 +151,78 @@ class PriceAPIClientImplTest {
             // Verify Mock invocation and status code check
             verify(httpClient, times(1)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
             verify(httpResponse, atLeastOnce()).statusCode();
+        }
+
+        @Test
+        @DisplayName("Then handle Fake HTTP.200 malformed response body - Verify Mock Invocation")
+        void handleFakeHTTP_OKMalformedResponseBody() throws Exception {
+            // Given
+            final String mockResponse = readJsonFromFile("data/json/negative/fail_malformed_resp.json");
+
+            // When
+            when(httpResponse.body()).thenReturn(mockResponse);
+            when(httpResponse.statusCode()).thenReturn(HttpURLConnection.HTTP_OK);
+            when(httpClient.send(any(), any(HttpResponse.BodyHandler.class))).thenReturn(httpResponse);
+
+            // When & Then
+            final HttpAPIException exception = assertThrows(HttpAPIException.class, () -> priceAPIClient.getPrice("cornflakes"));
+            final var expectedErrorMsg = "Failed to extract Response from Body. HTTP.Status: 200. HTTP.Body com.google.gson.stream.MalformedJsonException: Unterminated object at line 3 column 5 path $.title";
+            assertTrue(exception.getMessage().contains(expectedErrorMsg));
+
+            // Verify Mock invocation and status code check
+            verify(httpClient, times(1)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
+            verify(httpResponse, atLeastOnce()).statusCode();
+            verify(httpResponse, atLeastOnce()).body(); // Ensure body() is invoked
+        }
+
+        @Test
+        @DisplayName("Then handle HTTP.200 NULL Price - Verify Mock Invocation")
+        void handleHTTP200NullPriceResponseBody() throws Exception {
+            // Given
+            final String mockResponse = readJsonFromFile("data/json/negative/fail_null_price_resp.json");
+
+            // When
+            when(httpResponse.body()).thenReturn(mockResponse);
+            when(httpResponse.statusCode()).thenReturn(HttpURLConnection.HTTP_OK);
+            when(httpClient.send(any(), any(HttpResponse.BodyHandler.class))).thenReturn(httpResponse);
+
+            // When & Then
+            final var price = priceAPIClient.getPrice("cornflakes");
+
+            // Then
+            assertNull(price);  // Even though the price is null, this is later validated in the ValidatorProvider, invoked by CartServiceImpl.
+
+            // Verify Mock invocation and status code check
+            verify(httpClient, times(1)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
+            verify(httpResponse, atLeastOnce()).statusCode();
+            verify(httpResponse, atLeastOnce()).body(); // Ensure body() is invoked
+        }
+
+        /**
+         * Even if there was no title in the response, the price alone should be sufficient.
+         */
+        @Test
+        @DisplayName("Then handle HTTP.200 NULL Title - Verify Mock Invocation")
+        void handleHTTP200NullTitleResponseBody() throws Exception {
+            // Given
+            final String mockResponse = readJsonFromFile("data/json/negative/fail_null_title_resp.json");
+
+            // When
+            when(httpResponse.body()).thenReturn(mockResponse);
+            when(httpResponse.statusCode()).thenReturn(HttpURLConnection.HTTP_OK);
+            when(httpClient.send(any(), any(HttpResponse.BodyHandler.class))).thenReturn(httpResponse);
+
+            // When
+            final var price = priceAPIClient.getPrice("cornflakes");
+
+            //Then
+            assertNotNull(price);
+            assertEquals(10.20, price.doubleValue());
+
+            // Verify Mock invocation and status code check
+            verify(httpClient, times(1)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
+            verify(httpResponse, atLeastOnce()).statusCode();
+            verify(httpResponse, atLeastOnce()).body(); // Ensure body() is invoked
         }
     }
 
