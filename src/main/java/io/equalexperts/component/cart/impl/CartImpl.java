@@ -8,6 +8,7 @@ import io.equalexperts.model.ProductIn;
 import lombok.extern.log4j.Log4j2;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,12 +33,14 @@ public class CartImpl implements Cart {
         }
         // Add product to cart
         if (items.containsKey(productIn.name())) {
-            items.get(productIn.name()).addQuantity(productIn.quantity());
+            final ItemMetadata updatedItemMetadata = items.get(productIn.name()).addQuantity(productIn.quantity());
+            items.put(productIn.name(), updatedItemMetadata);
+            return Collections.unmodifiableMap(items);
         } else {
             final var productCart = new ItemMetadata(price, productIn.quantity());
             items.put(productIn.name(), productCart);
         }
-        return items;
+        return Collections.unmodifiableMap(items);
     }
 
     /**
@@ -54,6 +57,6 @@ public class CartImpl implements Cart {
             throw new InvalidProductRemovalException("Product name must not be null or blank");
         }
         items.remove(productName);
-        return items;
+        return Collections.unmodifiableMap(items);
     }
 }

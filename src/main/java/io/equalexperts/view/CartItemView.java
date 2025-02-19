@@ -11,11 +11,11 @@ public record CartItemView(String productName, int quantity, BigDecimal price) {
         if (cart.shoppingCart() == null) {
             return Collections.emptyList();
         }
-        return cart.shoppingCart().entrySet().stream()
+        return Collections.unmodifiableList(cart.shoppingCart().entrySet().stream()
                 .map(entry -> new CartItemView(
                         entry.getKey(),
-                        entry.getValue().getQuantity(),
-                        entry.getValue().getPrice()))
-                .toList();
+                        entry.getValue().quantity(),
+                        entry.getValue().price()))
+                .toList());
     }
 }

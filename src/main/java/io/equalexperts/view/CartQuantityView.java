@@ -11,7 +11,7 @@ public record CartQuantityView(int categoryItemCount, int totalItemsCount) {
         return new CartQuantityView(
                 cart.shoppingCart().size(),
                 cart.shoppingCart().values().stream()
-                        .mapToInt(ItemMetadata::getQuantity)
+                        .mapToInt(ItemMetadata::quantity)
                         .sum()
         );
     }

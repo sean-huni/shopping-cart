@@ -181,7 +181,12 @@ TDD = Code to interfaces -> write the unit tests -> write the implementation -> 
       |<---showUserTotals--|                    |                    |                    |                    |                    |                    |
       |                    |                    |                    |                    |                    |                    |                    |
       
-      
+
+New Flow: User -> CartService
+                        |
+                        |-> PriceAPIGatewayClient (has a ValidatorProvider)
+                        |-> Cart (has a ValidatorProvider)
+                        |-> CartCalculator (has a TaxCalculator)
 Error Flow
 -------------
 1. Invalid Input Validation:
@@ -314,3 +319,23 @@ Screenshot below:
 - Async Bulk price fetching optimization: Caching layer for price data, & agree with price-api-client on data-refresh
   rate/frequency for Cache-Eviction.❓
 - Caching layer for price data: Caffeine, Ehcache.❓
+
+# Issues Discovered from Assessment Feedback
+
+1. Remove hardcoded Base-URL & API-Endpoint from the PriceAPIGatewayClient❗❗❗❓15mins (including Unit Tests)
+2. Return an immutable map (`Collections.unmodifiableMap()`) for the Cart.❓ 2mins (including Unit Tests)
+3. The ItemMetadata is mutable❗❗❗❓ 30mins (including Unit Tests)
+4. Simplify the CartCalculator:
+
+- Remove the unnecessary layer of abstraction (CartFacade).❓3hrs (including unit tests)
+- Validator is not a service, but a utility.❓2mins (including unit tests)
+
+5. Simplified version: 2hrs (including unit tests)
+
+-       CartService -> Validator Utility - Validate (ProductInput + PriceApi) 
+                -> ShoppingCart - Keeping track of CartItems
+                -> CartCalculator - Calculate Totals
+                -> TaxCalculator - Calculate tax
+                -> PriceApi - Get Product Price 
+
+6. Do not expose the CartMap for potential modifications.❓

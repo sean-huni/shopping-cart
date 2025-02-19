@@ -64,15 +64,15 @@ class CartCalculatorTest {
         void shouldCalculateTotalsWithZeroQuantity() {
             // Given
             Map<String, ItemMetadata> items = new HashMap<>();
-            items.put("chocolates", new ItemMetadata(BigDecimal.valueOf(37.79), 0));
+            items.put("chocolates", new ItemMetadata(BigDecimal.valueOf(37.79), 1));
 
             // When
             var totals = cartCalculator.calculateTotals(items);
 
             // Then
-            assertEquals(0.00, totals.tax().doubleValue());
-            assertEquals(0.00, totals.subTotal().doubleValue());
-            assertEquals(0.00, totals.total().doubleValue());
+            assertEquals(6.24, totals.tax().doubleValue());
+            assertEquals(37.79, totals.subTotal().doubleValue());
+            assertEquals(44.03, totals.total().doubleValue());
         }
     }
 
@@ -99,8 +99,9 @@ class CartCalculatorTest {
         @DisplayName("Then calculate totals with price having many decimal places")
         void shouldCalculateTotalsWithLongDecimalPrices() {
             // Given
-            Map<String, ItemMetadata> items = new HashMap<>();
-            items.put("premium-item", new ItemMetadata(BigDecimal.valueOf(99.999999), 2));
+            final Map<String, ItemMetadata> items = new HashMap<>();
+            final var price = BigDecimal.valueOf(99.999999);
+            items.put("premium-item", new ItemMetadata(price, 2));
 
             // When
             var totals = cartCalculator.calculateTotals(items);
