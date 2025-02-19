@@ -323,19 +323,19 @@ Screenshot below:
 # Issues Discovered from Assessment Feedback
 
 1. Remove hardcoded Base-URL & API-Endpoint from the PriceAPIGatewayClient❗❗❗❓15mins (including Unit Tests)
-2. Return an immutable map (`Collections.unmodifiableMap()`) for the Cart.❓ 2mins (including Unit Tests)
+2. Return an immutable map (`Collections.unmodifiableMap()`) for the Cart.❓2mins (including Unit Tests)
 3. The ItemMetadata is mutable❗❗❗❓ 30mins (including Unit Tests)
 4. Simplify the CartCalculator:
-
-- Remove the unnecessary layer of abstraction (CartFacade).❓3hrs (including unit tests)
-- Validator is not a service, but a utility.❓2mins (including unit tests)
-
+    - Remove the unnecessary layer of abstraction (CartFacade).❓10mins to remove the CartFace, but 2hrs (unit & int
+      tests)
+    - Validator is not a service, but a Utility.❓2mins (including unit tests)
 5. Simplified version: 2hrs (including unit tests)
-
--       CartService -> Validator Utility - Validate (ProductInput + PriceApi) 
-                -> ShoppingCart - Keeping track of CartItems
-                -> CartCalculator - Calculate Totals
-                -> TaxCalculator - Calculate tax
-                -> PriceApi - Get Product Price 
+    -       CartService 
+             |
+             |-> Validator Utility - Validate (ProductInput + PriceApi) 
+             |-> ShoppingCart - Keeping track of CartItems
+             |-> CartCalculator - Calculate Totals
+             |-> TaxCalculator - Calculate tax
+             |-> PriceApi - Get Product Price 
 
 6. Do not expose the CartMap for potential modifications.❓

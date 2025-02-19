@@ -46,5 +46,4 @@ public class TaxCalculatorImpl implements TaxCalculator {
             throw new InvalidTaxException("%s must be a positive value".formatted(attribute));
         }
     }
-
 }

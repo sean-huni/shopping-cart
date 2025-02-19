@@ -7,7 +7,8 @@ import io.equalexperts.exception.CartException;
 import io.equalexperts.model.CartError;
 import io.equalexperts.model.ConsolidatedCart;
 import io.equalexperts.model.ProductIn;
-import io.equalexperts.service.external.priceclient.PriceAPIClient;
+import io.equalexperts.model.ProductRm;
+import io.equalexperts.service.external.priceclient.PriceApi;
 import io.equalexperts.service.internal.CartService;
 import io.equalexperts.validators.ValidatorProvider;
 import io.equalexperts.validators.wrapper.PriceWrapper;
@@ -21,13 +22,13 @@ import static io.equalexperts.constant.ErrorConstants.NOT_FOUND_ERROR;
 
 @Log4j2
 public class CartServiceImpl implements CartService {
-    private final PriceAPIClient priceAPIClient;    // For Price validation
+    private final PriceApi priceApi;    // For Price validation
     private final Cart cart;
     private final CartCalculator cartCalculator;
 
     // Rule of Thumb: Max 3 dependencies in class.
-    public CartServiceImpl(final PriceAPIClient priceAPIClient, final Cart cart, CartCalculator cartCalculator) {
-        this.priceAPIClient = priceAPIClient;
+    public CartServiceImpl(final PriceApi priceApi, final Cart cart, CartCalculator cartCalculator) {
+        this.priceApi = priceApi;
         this.cart = cart;
         this.cartCalculator = cartCalculator;
     }
@@ -36,7 +37,7 @@ public class CartServiceImpl implements CartService {
     public CartSummaryView validateAndAddToCart(final ProductIn productIn) {
         try {
             ValidatorProvider.validateData(productIn);    // Validate Client Input Data
-            final var price = priceAPIClient.getPrice(productIn.name());    // Get price from Price API
+            final var price = priceApi.getPrice(productIn.name());    // Get price from Price API
             ValidatorProvider.validateData(new PriceWrapper(price));  // Validate Price Data - Protect CartService from potential API Failures/Bugs.
             final var resp = addToCartAndGetTotals(productIn, price);    // Add product to cart and calculate totals
             return CartSummaryView.from(resp);    // Return the consolidated view of the shopping cart and its totals
@@ -56,6 +57,15 @@ public class CartServiceImpl implements CartService {
             final var errResp = new ConsolidatedCart(cartError, null, null);
             return CartSummaryView.from(errResp);
         }
+    }
+
+    @Override
+    public CartSummaryView removeFromCartAndGetTotals(final ProductRm productRm) {
+        ValidatorProvider.validateData(productRm);    // Validate Client Input Data
+        final var shoppingCart = cart.removeProduct(productRm.name());
+        final var totals = cartCalculator.calculateTotals(shoppingCart);
+        final var resp = new ConsolidatedCart(null, shoppingCart, totals);
+        return CartSummaryView.from(resp);
     }
 
 

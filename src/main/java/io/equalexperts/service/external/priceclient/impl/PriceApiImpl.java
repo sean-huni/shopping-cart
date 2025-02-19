@@ -6,7 +6,7 @@ import com.google.gson.JsonSyntaxException;
 import io.equalexperts.exception.Api400xError;
 import io.equalexperts.exception.HttpAPIException;
 import io.equalexperts.service.external.dto.PriceRespDTO;
-import io.equalexperts.service.external.priceclient.PriceAPIClient;
+import io.equalexperts.service.external.priceclient.PriceApi;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
@@ -18,13 +18,13 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 @Log4j2
-public class PriceAPIClientImpl implements PriceAPIClient {
+public class PriceApiImpl implements PriceApi {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private final String baseUrl;
     private final String priceApiUri;
     private final HttpClient httpClient;
 
-    public PriceAPIClientImpl(final String priceApiUri, final String baseUrl, final HttpClient httpClient) {
+    public PriceApiImpl(final String priceApiUri, final String baseUrl, final HttpClient httpClient) {
         this.priceApiUri = priceApiUri;
         this.baseUrl = baseUrl;
         this.httpClient = httpClient;

@@ -20,18 +20,18 @@ import static org.mockito.Mockito.when;
 @DisplayName("Unit-Tests - Given Mocked Pricing-API-Gateway")
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class PriceAPIClientTest {
+class PriceApiTest {
     @Mock
-    private PriceAPIClient priceAPIClient;
+    private PriceApi priceApi;
 
     @BeforeEach
     void setUp() {
-        when(priceAPIClient.getPrice("cheerios")).thenReturn(BigDecimal.valueOf(199.09));
-        when(priceAPIClient.getPrice("cornflakes")).thenReturn(BigDecimal.valueOf(34.99));
-        when(priceAPIClient.getPrice("frosties")).thenReturn(BigDecimal.valueOf(122.32));
-        when(priceAPIClient.getPrice("shreddies")).thenReturn(BigDecimal.valueOf(102.43));
-        when(priceAPIClient.getPrice("weetabix")).thenReturn(BigDecimal.valueOf(199.39));
-        when(priceAPIClient.getPrice("chocolates")).thenReturn(BigDecimal.valueOf(-599.39));
+        when(priceApi.getPrice("cheerios")).thenReturn(BigDecimal.valueOf(199.09));
+        when(priceApi.getPrice("cornflakes")).thenReturn(BigDecimal.valueOf(34.99));
+        when(priceApi.getPrice("frosties")).thenReturn(BigDecimal.valueOf(122.32));
+        when(priceApi.getPrice("shreddies")).thenReturn(BigDecimal.valueOf(102.43));
+        when(priceApi.getPrice("weetabix")).thenReturn(BigDecimal.valueOf(199.39));
+        when(priceApi.getPrice("chocolates")).thenReturn(BigDecimal.valueOf(-599.39));
     }
 
     @Nested
@@ -43,7 +43,7 @@ class PriceAPIClientTest {
             // Given
             final var productName = "cheerios";
             // When
-            final var price = priceAPIClient.getPrice(productName);
+            final var price = priceApi.getPrice(productName);
             // Then
             assertEquals(199.09, price.doubleValue());
         }
@@ -58,7 +58,7 @@ class PriceAPIClientTest {
             // Given
             final var productName = "cheerios";
             // When
-            final var price = priceAPIClient.getPrice(productName);
+            final var price = priceApi.getPrice(productName);
             // Then
             assertEquals(199.09, price.doubleValue());
         }

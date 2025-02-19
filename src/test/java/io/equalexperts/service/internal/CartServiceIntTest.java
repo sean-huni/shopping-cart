@@ -7,8 +7,8 @@ import io.equalexperts.component.cart.impl.CartImpl;
 import io.equalexperts.component.tax.TaxCalculator;
 import io.equalexperts.component.tax.impl.TaxCalculatorImpl;
 import io.equalexperts.model.ProductIn;
-import io.equalexperts.service.external.priceclient.PriceAPIClient;
-import io.equalexperts.service.external.priceclient.impl.PriceAPIClientImpl;
+import io.equalexperts.service.external.priceclient.PriceApi;
+import io.equalexperts.service.external.priceclient.impl.PriceApiImpl;
 import io.equalexperts.service.internal.cartengine.CartServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -31,10 +31,10 @@ class CartServiceIntTest {
     private static final String BASE_URL = "https://equalexperts.github.io";
     private static final HttpClient httpClient = HttpClient.newHttpClient();
     private final TaxCalculator taxCalculator = new TaxCalculatorImpl(BigDecimal.valueOf(12.5)); // @12.5% tax
-    private final PriceAPIClient priceAPIClient = new PriceAPIClientImpl(API_URI, BASE_URL, httpClient);
+    private final PriceApi priceApi = new PriceApiImpl(API_URI, BASE_URL, httpClient);
     private final Cart cart = new CartImpl();
     private final CartCalculator cartCalculator = new CartCalculatorImpl(taxCalculator);
-    private final CartService cartService = new CartServiceImpl(priceAPIClient, cart, cartCalculator);
+    private final CartService cartService = new CartServiceImpl(priceApi, cart, cartCalculator);
 
     @Nested
     @DisplayName("Validate & AddToCart - Positive Int-Test Scenarios")
