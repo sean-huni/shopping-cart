@@ -33,7 +33,7 @@ public class CartCalculatorImpl implements CartCalculator {
         // Calculate total price
         for (Map.Entry<String, ItemMetadata> entry : items.entrySet()) {
             final ItemMetadata itemMetadata = entry.getValue();
-            subTotal = calculateItemSubTotal(subTotal, itemMetadata.getPrice(), itemMetadata.getQuantity());
+            subTotal = calculateItemSubTotal(subTotal, itemMetadata.price(), itemMetadata.quantity());
         }
 
         final var taxAmount = taxCalculator.calculateTaxAmount(subTotal);

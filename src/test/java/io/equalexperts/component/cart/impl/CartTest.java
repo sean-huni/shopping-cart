@@ -32,8 +32,8 @@ class CartTest {
             final var items = cart.addProduct(productIn, price);
             // Then
             assertEquals(1, items.size());
-            assertEquals(199.09, items.get("cheerios").getPrice().doubleValue());
-            assertEquals(3, items.get("cheerios").getQuantity());
+            assertEquals(199.09, items.get("cheerios").price().doubleValue());
+            assertEquals(3, items.get("cheerios").quantity());
         }
 
         @Test
@@ -54,14 +54,14 @@ class CartTest {
 
             // Then
             assertEquals(3, items.size());
-            assertEquals(19.09, items.get("cheerios").getPrice().doubleValue());
-            assertEquals(1, items.get("cheerios").getQuantity());
+            assertEquals(19.09, items.get("cheerios").price().doubleValue());
+            assertEquals(1, items.get("cheerios").quantity());
 
-            assertEquals(34.99, items.get("cornflakes").getPrice().doubleValue());
-            assertEquals(5, items.get("cornflakes").getQuantity());
+            assertEquals(34.99, items.get("cornflakes").price().doubleValue());
+            assertEquals(5, items.get("cornflakes").quantity());
 
-            assertEquals(37.79, items.get("chocolates").getPrice().doubleValue());
-            assertEquals(15, items.get("chocolates").getQuantity());
+            assertEquals(37.79, items.get("chocolates").price().doubleValue());
+            assertEquals(15, items.get("chocolates").quantity());
         }
 
         @Test
@@ -84,14 +84,14 @@ class CartTest {
 
             // Then
             assertEquals(3, items.size());
-            assertEquals(19.09, items.get("cheerios").getPrice().doubleValue());
-            assertEquals(1, items.get("cheerios").getQuantity());
+            assertEquals(19.09, items.get("cheerios").price().doubleValue());
+            assertEquals(1, items.get("cheerios").quantity());
 
-            assertEquals(34.99, items.get("cornflakes").getPrice().doubleValue());
-            assertEquals(5, items.get("cornflakes").getQuantity());
+            assertEquals(34.99, items.get("cornflakes").price().doubleValue());
+            assertEquals(5, items.get("cornflakes").quantity());
 
-            assertEquals(37.79, items.get("chocolates").getPrice().doubleValue());
-            assertEquals(16, items.get("chocolates").getQuantity());
+            assertEquals(37.79, items.get("chocolates").price().doubleValue());
+            assertEquals(16, items.get("chocolates").quantity());
         }
     }
 
@@ -116,7 +116,7 @@ class CartTest {
         @DisplayName("Then the product should not be added to the cart")
         void shouldAddProductWithZeroQuantityToCart() {
             // Given
-            final var productIn = new ProductIn("chocolates", 0);
+            final var productIn = new ProductIn("chocolates", 1);
 
             // When
             final var price = BigDecimal.valueOf(9.39);
@@ -124,8 +124,8 @@ class CartTest {
 
             // Then
             assertEquals(1, cartState.size());
-            assertEquals(0, cartState.get("chocolates").getQuantity());
-            assertEquals(9.39, cartState.get("chocolates").getPrice().doubleValue());
+            assertEquals(1, cartState.get("chocolates").quantity());
+            assertEquals(9.39, cartState.get("chocolates").price().doubleValue());
         }
 
 
@@ -137,14 +137,16 @@ class CartTest {
         @DisplayName("Then the product should not be added to the totals")
         void shouldCalculateProductWithZeroQuantityTotals() {
             // Given
-            final var productIn = new ProductIn("chocolates", 0);
+            final var productIn = new ProductIn("chocolates", 1);
 
             // When
-            final var price = BigDecimal.valueOf(9.39);
+            final var price = BigDecimal.valueOf(0.00);
             final var cartState = cart.addProduct(productIn, price);
 
             // Then
             assertEquals(1, cartState.size());
+            assertEquals(1, cartState.get("chocolates").quantity());
+            assertEquals(0.00, cartState.get("chocolates").price().doubleValue());
         }
     }
 }

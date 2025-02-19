@@ -10,7 +10,7 @@ public class TaxCalculatorImpl implements TaxCalculator {
     private final BigDecimal taxRate;
 
     public TaxCalculatorImpl(final BigDecimal taxRate) {
-        checkForNegativeValues(taxRate, "Tax-rate ");
+        checkForNegativeValues(taxRate, "Tax-rate");
         this.taxRate = taxRate;
     }
 
@@ -26,7 +26,7 @@ public class TaxCalculatorImpl implements TaxCalculator {
      * @return The calculated tax amount as a BigDecimal.
      */
     public BigDecimal calculateTaxAmount(final BigDecimal subTotal) {
-        checkForNegativeValues(subTotal, "Sub-total ");
+        checkForNegativeValues(subTotal, "Sub-total");
         //only round-off the final result, otherwise the mathematical calculations will be incorrect
         return subTotal.multiply(taxRate.divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP))
                 .setScale(10, RoundingMode.HALF_UP)
@@ -43,8 +43,7 @@ public class TaxCalculatorImpl implements TaxCalculator {
      */
     private static void checkForNegativeValues(final BigDecimal value, final String attribute) {
         if (value.compareTo(BigDecimal.ZERO) < 0) {
-            throw new InvalidTaxException("%smust be a positive value".formatted(attribute));
+            throw new InvalidTaxException("%s must be a positive value".formatted(attribute));
         }
     }
-
 }

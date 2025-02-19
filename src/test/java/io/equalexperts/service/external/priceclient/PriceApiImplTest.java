@@ -2,7 +2,7 @@ package io.equalexperts.service.external.priceclient;
 
 import io.equalexperts.exception.Api400xError;
 import io.equalexperts.exception.HttpAPIException;
-import io.equalexperts.service.external.priceclient.impl.PriceAPIClientImpl;
+import io.equalexperts.service.external.priceclient.impl.PriceApiImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -35,35 +34,24 @@ import static org.mockito.Mockito.when;
 
 @Tag("unit")
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Unit-Tests - Given Mocked PriceAPIClient")
-class PriceAPIClientImplTest {
+@DisplayName("Unit-Tests - Given Mocked PriceApi")
+class PriceApiImplTest {
     @Mock
     private HttpClient httpClient;
     @Mock
     private HttpResponse<String> httpResponse;
-    private PriceAPIClientImpl priceAPIClient;
-
+    private final String baseUrl = "http://wrong-base-url";
+    private final String priceApiUri = "wrong-price-api-uri";
+    private PriceApi priceApi;
 
     @BeforeEach
-    void setUp() throws Exception {
-        priceAPIClient = new PriceAPIClientImpl();
-
-        // Use reflection to inject mocks with wrong metadata - Negative Testing
-        injectMock(priceAPIClient, "priceApiUri", "wrong-price-api-uri");
-        injectMock(priceAPIClient, "baseUrl", "http://wrong-base-url");
-        injectMock(priceAPIClient, "httpClient", httpClient);
+    public void setUp() {
+        priceApi = new PriceApiImpl(priceApiUri, baseUrl, httpClient);
     }
 
     @AfterEach
     void tearDown() {
         reset(httpClient, httpResponse);
-    }
-
-    // This was a bit of a complex test-case. I chose reflection to inject mocks.
-    private void injectMock(final Object target, final String fieldName, final Object mockObject) throws Exception {
-        Field field = PriceAPIClientImpl.class.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(target, mockObject);
     }
 
     @Nested
@@ -78,13 +66,32 @@ class PriceAPIClientImplTest {
                     .thenThrow(new InterruptedException("Connection timeout"));
 
             // When & Then
-            final HttpAPIException exception = assertThrows(HttpAPIException.class, () -> priceAPIClient.getPrice("cornflakes"));
+            final HttpAPIException exception = assertThrows(HttpAPIException.class, () -> priceApi.getPrice("cornflakes"));
 
             assertTrue(exception.getMessage().contains("Thread was interrupted: Connection timeout"));
             assertInstanceOf(InterruptedException.class, exception.getCause());
 
             // Verify that the mock was invoked
             verify(httpClient, times(1)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
+        }
+
+        @Test
+        @DisplayName("Then handle IllegalArgumentException - Verify Mock Invocation")
+        void thenHandleMalformedUri() throws Exception {
+            // Given
+            priceApi = new PriceApiImpl(priceApiUri, "*from user%&", httpClient);
+            when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                    .thenThrow(new IllegalArgumentException("Malformed URI"));
+
+
+            // When & Then
+            final HttpAPIException exception = assertThrows(HttpAPIException.class, () -> priceApi.getPrice("cornflakes"));
+
+            assertTrue(exception.getMessage().contains("Illegal character in path at index"));
+            assertInstanceOf(IllegalArgumentException.class, exception.getCause());
+
+            // Verify that the mock was invoked
+            verify(httpClient, times(0)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
         }
 
         @Test
@@ -95,7 +102,7 @@ class PriceAPIClientImplTest {
                     .thenThrow(new IOException("Connection refused"));
 
             // When & Then
-            final HttpAPIException exception = assertThrows(HttpAPIException.class, () -> priceAPIClient.getPrice("cornflakes"));
+            final HttpAPIException exception = assertThrows(HttpAPIException.class, () -> priceApi.getPrice("cornflakes"));
             assertTrue(exception.getMessage().contains("Error occurred while making API call"));
             assertInstanceOf(IOException.class, exception.getCause());
 
@@ -111,7 +118,7 @@ class PriceAPIClientImplTest {
             when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(httpResponse);
 
             // When & Then
-            final Api400xError exception = assertThrows(Api400xError.class, () -> priceAPIClient.getPrice("nonexistent"));
+            final Api400xError exception = assertThrows(Api400xError.class, () -> priceApi.getPrice("nonexistent"));
 
             assertEquals(404, exception.getStatus());
 
@@ -128,7 +135,7 @@ class PriceAPIClientImplTest {
             when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(httpResponse);
 
             // When & Then
-            final Api400xError exception = assertThrows(Api400xError.class, () -> priceAPIClient.getPrice("nonexistent"));
+            final Api400xError exception = assertThrows(Api400xError.class, () -> priceApi.getPrice("nonexistent"));
 
             assertEquals(400, exception.getStatus());
 
@@ -145,7 +152,7 @@ class PriceAPIClientImplTest {
             when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(httpResponse);
 
             // When & Then
-            final HttpAPIException exception = assertThrows(HttpAPIException.class, () -> priceAPIClient.getPrice("cornflakes"));
+            final HttpAPIException exception = assertThrows(HttpAPIException.class, () -> priceApi.getPrice("cornflakes"));
             assertTrue(exception.getMessage().contains("Failed to fetch product details"));
 
             // Verify Mock invocation and status code check
@@ -165,7 +172,7 @@ class PriceAPIClientImplTest {
             when(httpClient.send(any(), any(HttpResponse.BodyHandler.class))).thenReturn(httpResponse);
 
             // When & Then
-            final HttpAPIException exception = assertThrows(HttpAPIException.class, () -> priceAPIClient.getPrice("cornflakes"));
+            final HttpAPIException exception = assertThrows(HttpAPIException.class, () -> priceApi.getPrice("cornflakes"));
             final var expectedErrorMsg = "Failed to extract Response from Body. HTTP.Status: 200. HTTP.Body com.google.gson.stream.MalformedJsonException: Unterminated object at line 3 column 5 path $.title";
             assertTrue(exception.getMessage().contains(expectedErrorMsg));
 
@@ -187,7 +194,7 @@ class PriceAPIClientImplTest {
             when(httpClient.send(any(), any(HttpResponse.BodyHandler.class))).thenReturn(httpResponse);
 
             // When & Then
-            final var price = priceAPIClient.getPrice("cornflakes");
+            final var price = priceApi.getPrice("cornflakes");
 
             // Then
             assertNull(price);  // Even though the price is null, this is later validated in the ValidatorProvider, invoked by CartServiceImpl.
@@ -213,7 +220,7 @@ class PriceAPIClientImplTest {
             when(httpClient.send(any(), any(HttpResponse.BodyHandler.class))).thenReturn(httpResponse);
 
             // When
-            final var price = priceAPIClient.getPrice("cornflakes");
+            final var price = priceApi.getPrice("cornflakes");
 
             //Then
             assertNotNull(price);
@@ -242,7 +249,7 @@ class PriceAPIClientImplTest {
             when(httpResponse.statusCode()).thenReturn(HttpURLConnection.HTTP_OK);
             when(httpClient.send(any(), any(HttpResponse.BodyHandler.class))).thenReturn(httpResponse);
 
-            final var price = priceAPIClient.getPrice(productName);
+            final var price = priceApi.getPrice(productName);
 
             // Then
             // Replace "expectedPrice" with the actual value you'd expect based on the JSON content.
