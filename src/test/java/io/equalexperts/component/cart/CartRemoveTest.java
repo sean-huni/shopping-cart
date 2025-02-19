@@ -88,7 +88,7 @@ class CartRemoveTest {
         }
 
         @Test
-        @DisplayName("When removing a product (with Blank) from the cart")
+        @DisplayName("When removing a product (with Blank name) from the cart")
         void whenRemovingProductWithBlankName() {
             // Given
             final var productIn = new ProductIn("cornflakes", 3);
@@ -97,6 +97,24 @@ class CartRemoveTest {
 
             // When
             final var cartException = assertThrows(InvalidProductRemovalException.class, () -> cart.removeProduct(""));
+
+            // Then
+            assertNotNull(cartException);
+            assertEquals("Product name must not be null or blank", cartException.getMessage());
+            verify(cart, atMost(0)).removeProduct("cornflakes");
+            verify(cart, atMost(1)).removeProduct("");
+        }
+
+        @Test
+        @DisplayName("When removing a product (with Null name) from the cart")
+        void whenRemovingProductWithNullName() {
+            // Given
+            final var productIn = new ProductIn("cornflakes", 3);
+            final var price = BigDecimal.valueOf(2.99);
+            cart.addProduct(productIn, price);
+
+            // When
+            final var cartException = assertThrows(InvalidProductRemovalException.class, () -> cart.removeProduct(null));
 
             // Then
             assertNotNull(cartException);

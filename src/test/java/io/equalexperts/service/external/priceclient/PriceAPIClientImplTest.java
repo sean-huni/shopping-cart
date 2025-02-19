@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -41,29 +40,18 @@ class PriceAPIClientImplTest {
     private HttpClient httpClient;
     @Mock
     private HttpResponse<String> httpResponse;
-    private PriceAPIClientImpl priceAPIClient;
-
+    private final String baseUrl = "http://wrong-base-url";
+    private final String priceApiUri = "wrong-price-api-uri";
+    private PriceAPIClient priceAPIClient;
 
     @BeforeEach
-    void setUp() throws Exception {
-        priceAPIClient = new PriceAPIClientImpl();
-
-        // Use reflection to inject mocks with wrong metadata - Negative Testing
-        injectMock(priceAPIClient, "priceApiUri", "wrong-price-api-uri");
-        injectMock(priceAPIClient, "baseUrl", "http://wrong-base-url");
-        injectMock(priceAPIClient, "httpClient", httpClient);
+    public void setUp() {
+        priceAPIClient = new PriceAPIClientImpl(priceApiUri, baseUrl, httpClient);
     }
 
     @AfterEach
     void tearDown() {
         reset(httpClient, httpResponse);
-    }
-
-    // This was a bit of a complex test-case. I chose reflection to inject mocks.
-    private void injectMock(final Object target, final String fieldName, final Object mockObject) throws Exception {
-        Field field = PriceAPIClientImpl.class.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(target, mockObject);
     }
 
     @Nested
@@ -85,6 +73,25 @@ class PriceAPIClientImplTest {
 
             // Verify that the mock was invoked
             verify(httpClient, times(1)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
+        }
+
+        @Test
+        @DisplayName("Then handle IllegalArgumentException - Verify Mock Invocation")
+        void thenHandleMalformedUri() throws Exception {
+            // Given
+            priceAPIClient = new PriceAPIClientImpl(priceApiUri, "*from user%&", httpClient);
+            when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                    .thenThrow(new IllegalArgumentException("Malformed URI"));
+
+
+            // When & Then
+            final HttpAPIException exception = assertThrows(HttpAPIException.class, () -> priceAPIClient.getPrice("cornflakes"));
+
+            assertTrue(exception.getMessage().contains("Illegal character in path at index"));
+            assertInstanceOf(IllegalArgumentException.class, exception.getCause());
+
+            // Verify that the mock was invoked
+            verify(httpClient, times(0)).send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
         }
 
         @Test

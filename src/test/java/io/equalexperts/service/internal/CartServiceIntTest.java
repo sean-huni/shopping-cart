@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.net.http.HttpClient;
 
 import static io.equalexperts.constant.ErrorConstants.NOT_FOUND_ERROR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,9 +31,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag("int") //Integration test
 @DisplayName("Int-Tests - Given CartService")
 class CartServiceIntTest {
+    private static final String API_URI = "backend-take-home-test-data";
+    private static final String BASE_URL = "https://equalexperts.github.io";
+    private static final HttpClient httpClient = HttpClient.newHttpClient();
     private final TaxCalculator taxCalculator = new TaxCalculatorImpl(BigDecimal.valueOf(12.5)); // @12.5% tax
     private final ValidatorProvider validatorProvider = new ValidatorProviderImpl();
-    private final PriceAPIClient priceAPIClient = new PriceAPIClientImpl();
+    private final PriceAPIClient priceAPIClient = new PriceAPIClientImpl(API_URI, BASE_URL, httpClient);
     private final Cart cart = new CartImpl();
     private final CartCalculator cartCalculator = new CartCalculatorImpl(taxCalculator);
     private final CartFacade cartFacade = new CartFacadeImpl(cart, cartCalculator);
