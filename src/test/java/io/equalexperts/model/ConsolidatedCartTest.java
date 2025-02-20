@@ -80,7 +80,7 @@ class ConsolidatedCartTest {
             final var isAvailable = consolidatedCart.shoppingCart().get("conflakes");
 
             // Then
-            assertTrue(isAvailable.getQuantity() > 0);
+            assertTrue(isAvailable.quantity() > 0);
         }
     }
 }

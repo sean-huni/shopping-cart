@@ -1,16 +1,16 @@
 package io.equalexperts.service.internal;
 
-import io.equalexperts.component.facade.CartFacade;
+import io.equalexperts.component.calculator.CartCalculator;
+import io.equalexperts.component.calculator.impl.CartCalculatorImpl;
+import io.equalexperts.component.cart.Cart;
+import io.equalexperts.component.cart.impl.CartImpl;
+import io.equalexperts.component.tax.TaxCalculator;
+import io.equalexperts.component.tax.impl.TaxCalculatorImpl;
 import io.equalexperts.exception.Api400xError;
-import io.equalexperts.exception.CartException;
-import io.equalexperts.model.CartError;
-import io.equalexperts.model.CartTotals;
-import io.equalexperts.model.ConsolidatedCart;
-import io.equalexperts.model.ItemMetadata;
 import io.equalexperts.model.ProductIn;
-import io.equalexperts.service.external.priceclient.PriceAPIClient;
+import io.equalexperts.model.ProductRm;
+import io.equalexperts.service.external.priceclient.PriceApi;
 import io.equalexperts.service.internal.cartengine.CartServiceImpl;
-import io.equalexperts.validators.ValidatorProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,18 +19,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
-import static io.equalexperts.constant.ErrorConstants.VALIDATION_ERROR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @Tag("unit")
@@ -38,24 +39,24 @@ import static org.mockito.Mockito.when;
 @MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("Unit-Tests - Given Mocked CartService")
 class CartServiceTest {
+    @Spy
+    private final TaxCalculator taxCalculator = new TaxCalculatorImpl(BigDecimal.valueOf(12.5)); // @12.5% tax
+    @Spy
+    private final Cart cart = new CartImpl();
+    @Spy
+    private CartCalculator cartCalculator = new CartCalculatorImpl(taxCalculator);
     @Mock
-    private ValidatorProvider validator;    // For Product validation
-    @Mock
-    private PriceAPIClient priceAPIClient;    // For Price validation
-    @Mock
-    private CartFacade cartFacade;      // For Cart operations
+    private PriceApi priceApi;
     @InjectMocks
     private CartServiceImpl cartService;
 
     @BeforeEach
     void setUp() {
-        final CartTotals cartTotals = new CartTotals(BigDecimal.valueOf(19.09), BigDecimal.valueOf(2.38625), BigDecimal.valueOf(21.47625));
-        final ConsolidatedCart consolidatedCart = new ConsolidatedCart(null, Map.of("cheerios", new ItemMetadata(BigDecimal.valueOf(12.34), 3)), cartTotals);
 
-        doNothing().when(validator).validateData(new ProductIn("cheerios", 3));
-        when(priceAPIClient.getPrice("cheerios")).thenReturn(BigDecimal.valueOf(19.09));
-        when(cartFacade.addToCartAndGetTotals(new ProductIn("cheerios", 3), BigDecimal.valueOf(19.09)))
-                .thenReturn(consolidatedCart);
+        when(priceApi.getPrice("frosties")).thenReturn(BigDecimal.valueOf(12.34));
+        when(priceApi.getPrice("cheerios")).thenReturn(BigDecimal.valueOf(19.09));
+
+        cartService = new CartServiceImpl(priceApi, cart, cartCalculator);
     }
 
     @Nested
@@ -69,7 +70,7 @@ class CartServiceTest {
             final var cheeriosItem = consolidatedCart.items().stream().filter(i -> i.productName().equals("cheerios")).findAny().get();
 
             assertEquals("cheerios", cheeriosItem.productName());
-            assertEquals(12.34, cheeriosItem.price().doubleValue());
+            assertEquals(19.09, cheeriosItem.price().doubleValue());
         }
     }
 
@@ -79,7 +80,7 @@ class CartServiceTest {
 
         @Test
         void returnCartErrorsWhenAddingToCartMimicAPIServiceUnavailable() {
-            when(priceAPIClient.getPrice(any())).thenThrow(new RuntimeException("Price API is down"));
+            when(priceApi.getPrice(any())).thenThrow(new RuntimeException("Price API is down"));
 
             final ProductIn cheerios = new ProductIn("cheerios", 3);
 
@@ -90,15 +91,14 @@ class CartServiceTest {
 
         @Test
         void returnCartErrorsWhenAddingToCart() {
-            when(cartFacade.addToCartAndGetTotals(any(), any())).thenThrow(new CartException("Price must be non-negative"));
-            when(validator.buildErrors(any())).thenReturn(new CartError(400L, VALIDATION_ERROR, null, "Price must be non-negative"));
+            when(priceApi.getPrice("choco")).thenReturn(BigDecimal.valueOf(-19.09));
 
             final ProductIn cheerios = new ProductIn("choco", 9);
 
             final var cartException = cartService.validateAndAddToCart(cheerios);
 
             assertTrue(cartException.errors().hasErrors());
-            assertEquals("Price must be non-negative", cartException.errors().errorMessage());
+            assertEquals("'price': Price should not be less than 0.00", cartException.errors().errorMessage().trim());
         }
 
         @Test
@@ -106,7 +106,7 @@ class CartServiceTest {
         void returnCartErrorsWhenProductNotFound() {
             // Given
             final String productName = "nonexistent-product";
-            when(priceAPIClient.getPrice(productName)).thenThrow(new Api400xError(404, "Product not found")); // Simulate Api400xError
+            when(priceApi.getPrice(productName)).thenThrow(new Api400xError(404, "Product not found")); // Simulate Api400xError
 
             final ProductIn productIn = new ProductIn(productName, 1);
 
@@ -117,6 +117,28 @@ class CartServiceTest {
             assertTrue(response.errors().hasErrors());
             assertEquals(404, response.errors().statusCode()); // Verify that the error code matches
             assertEquals("Product %s not found".formatted(productName), response.errors().errorMessage()); // Verify the error message
+            verify(priceApi, times(1)).getPrice(productName); // Verify that the getPrice method was called
+        }
+    }
+
+    @Nested
+    @DisplayName("Remove item from Cart - Positive Scenarios")
+    class WhenRemoveItemFromCart {
+        @Test
+        void removeFromCartAndGetTotals() {
+            //Given
+            final ProductIn cheerios = new ProductIn("cheerios", 3);
+
+            //When
+            when(priceApi.getPrice("cornflakes")).thenReturn(BigDecimal.valueOf(19.09));
+            cartService.validateAndAddToCart(cheerios);
+            cartService.validateAndAddToCart(new ProductIn("cornflakes", 3));
+
+            final var consolidatedCart = cartService.removeFromCartAndGetTotals(new ProductRm("cheerios"));
+
+            assertFalse(consolidatedCart.items().stream().anyMatch(i -> i.productName().equals("cheerios")));
+            assertTrue(consolidatedCart.items().stream().anyMatch(i -> i.productName().equals("cornflakes")));
+            assertEquals(3, consolidatedCart.quantities().totalItemsCount());
         }
     }
 }

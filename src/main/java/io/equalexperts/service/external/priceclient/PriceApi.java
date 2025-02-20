@@ -2,7 +2,7 @@ package io.equalexperts.service.external.priceclient;
 
 import java.math.BigDecimal;
 
-public interface PriceAPIClient {
+public interface PriceApi {
     /**
      * Retrieves the price of a product given its name by interacting with the Price API.
      *

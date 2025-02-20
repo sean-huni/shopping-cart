@@ -26,8 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag("unit")
 @DisplayName("Unit-Tests - Given Validator-Provider")
 class ValidatorProviderTest {
-    private final ValidatorProvider validatorProvider = new ValidatorProviderImpl();
-
     @Nested
     @DisplayName("When validating ProductIn data model")
     class WhenValidatingProductIn {
@@ -42,7 +40,7 @@ class ValidatorProviderTest {
                 final ProductIn productIn = new ProductIn("cheerios", 3);
 
                 // When validating the data, then no exception should be thrown
-                assertDoesNotThrow(() -> validatorProvider.validateData(productIn));
+                assertDoesNotThrow(() -> ValidatorProvider.validateData(productIn));
             }
         }
 
@@ -57,7 +55,7 @@ class ValidatorProviderTest {
                 final ProductIn productIn = new ProductIn("", 3);
 
                 // When validated erroneous data, then a CartException should be thrown
-                final Exception exception = assertThrows(CartException.class, () -> validatorProvider.validateData(productIn));
+                final Exception exception = assertThrows(CartException.class, () -> ValidatorProvider.validateData(productIn));
                 assertEquals("VALIDATION_ERROR", exception.getMessage());
                 assertEquals(1, ((CartValidationException) exception).getViolations().size());
                 // @NotBlank or @Size validation triggers in random order.
@@ -72,7 +70,7 @@ class ValidatorProviderTest {
                 final ProductIn productIn = new ProductIn("demo", null);
 
                 // When validated erroneous data, then a CartException should be thrown
-                final Exception exception = assertThrows(CartException.class, () -> validatorProvider.validateData(productIn));
+                final Exception exception = assertThrows(CartException.class, () -> ValidatorProvider.validateData(productIn));
                 assertEquals("VALIDATION_ERROR", exception.getMessage());
                 assertEquals(1, ((CartValidationException) exception).getViolations().size());
                 assertEquals("Product-Quantity is required", ((CartValidationException) exception).getViolations().get("quantity"));
@@ -86,8 +84,8 @@ class ValidatorProviderTest {
                 final ProductIn productIn = new ProductIn(null, null);
 
                 // When validated erroneous data, then a CartException should be thrown
-                final CartException exception = assertThrows(CartException.class, () -> validatorProvider.validateData(productIn));
-                final CartError cartError = validatorProvider.buildErrors(exception);
+                final CartException exception = assertThrows(CartException.class, () -> ValidatorProvider.validateData(productIn));
+                final CartError cartError = ValidatorProvider.buildErrors(exception);
 
                 assertEquals(VALIDATION_ERROR, cartError.errorType());
                 assertEquals(VALIDATION_ERROR, cartError.message());
@@ -106,13 +104,13 @@ class ValidatorProviderTest {
             @Test
             @DisplayName("The throw ServiceError when CartException is null")
             void shouldThrowServiceErrorWhenCartExceptionIsNull() {
-                assertThrows(ServiceError.class, () -> validatorProvider.buildErrors(null));
+                assertThrows(ServiceError.class, () -> ValidatorProvider.buildErrors(null));
             }
 
             @Test
             @DisplayName("The throw ServiceError when CartException is null")
             void shouldThrowServiceErrorWhenCartExceptionNot() {
-                assertDoesNotThrow(() -> validatorProvider.buildErrors(new CartException("Demo Exception")));
+                assertDoesNotThrow(() -> ValidatorProvider.buildErrors(new CartException("Demo Exception")));
             }
 
             @Test
@@ -122,7 +120,7 @@ class ValidatorProviderTest {
                 final ProductIn productIn = new ProductIn(null, null);
 
                 // Then
-                final Exception exception = assertThrows(CartException.class, () -> validatorProvider.validateData(productIn));
+                final Exception exception = assertThrows(CartException.class, () -> ValidatorProvider.validateData(productIn));
 
                 assertEquals("VALIDATION_ERROR", exception.getMessage());
                 assertEquals(2, ((CartValidationException) exception).getViolations().size());
@@ -137,7 +135,7 @@ class ValidatorProviderTest {
                 final ProductIn productIn = new ProductIn("y", -1);
 
                 // Then
-                final Exception exception = assertThrows(CartException.class, () -> validatorProvider.validateData(productIn));
+                final Exception exception = assertThrows(CartException.class, () -> ValidatorProvider.validateData(productIn));
 
                 assertEquals("VALIDATION_ERROR", exception.getMessage());
                 assertEquals(2, ((CartValidationException) exception).getViolations().size());
@@ -162,7 +160,7 @@ class ValidatorProviderTest {
                 final PriceWrapper pw = new PriceWrapper(BigDecimal.valueOf(33.09));
 
                 // When validating the data, then no exception should be thrown
-                assertDoesNotThrow(() -> validatorProvider.validateData(pw));
+                assertDoesNotThrow(() -> ValidatorProvider.validateData(pw));
             }
         }
 
@@ -177,7 +175,7 @@ class ValidatorProviderTest {
                 final PriceWrapper pw = new PriceWrapper(BigDecimal.valueOf(-599.39));
 
                 // When validated erroneous data, then a CartException should be thrown
-                final Exception exception = assertThrows(CartException.class, () -> validatorProvider.validateData(pw));
+                final Exception exception = assertThrows(CartException.class, () -> ValidatorProvider.validateData(pw));
                 assertEquals("PRICE_SERVICE_ERROR", ((PriceServiceException) exception).getTitle());
                 assertEquals("'price': Price should not be less than 0.00", exception.getMessage().trim());
             }

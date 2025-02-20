@@ -1,29 +1,29 @@
 package io.equalexperts.model;
 
+import io.equalexperts.exception.InvalidCartParamsException;
+
 import java.math.BigDecimal;
 
-public class ItemMetadata {
-    private final BigDecimal price;
-    private Integer quantity;
-
-    public ItemMetadata(BigDecimal price, Integer quantity) {
-        this.price = price;
-        this.quantity = quantity;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
+public record ItemMetadata(BigDecimal price, Integer quantity) {
+    public ItemMetadata {
+        validateData(price, quantity);
     }
 
     // Method to update quantity
-    public void addQuantity(int quantity) {
-        if (this.quantity == null) {
-            this.quantity = 0;
+    public ItemMetadata addQuantity(int quantity) {
+        validateData(this.price, quantity);
+        int newQuantity = this.quantity;
+        newQuantity += quantity;
+        return new ItemMetadata(this.price, newQuantity);
+    }
+
+    private void validateData(final BigDecimal price, final Integer quantity) {
+        if (price == null || price.doubleValue() < 0) {
+            throw new InvalidCartParamsException("Price must not be null and must be non-negative");
         }
-        this.quantity += quantity;
+
+        if (quantity == null || quantity <= 0) {
+            throw new InvalidCartParamsException("Quantity must not be null and must be positive integer");
+        }
     }
 }

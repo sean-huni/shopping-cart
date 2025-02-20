@@ -4,22 +4,19 @@ import io.equalexperts.component.calculator.CartCalculator;
 import io.equalexperts.component.calculator.impl.CartCalculatorImpl;
 import io.equalexperts.component.cart.Cart;
 import io.equalexperts.component.cart.impl.CartImpl;
-import io.equalexperts.component.facade.CartFacade;
-import io.equalexperts.component.facade.impl.CartFacadeImpl;
 import io.equalexperts.component.tax.TaxCalculator;
 import io.equalexperts.component.tax.impl.TaxCalculatorImpl;
 import io.equalexperts.model.ProductIn;
-import io.equalexperts.service.external.priceclient.PriceAPIClient;
-import io.equalexperts.service.external.priceclient.impl.PriceAPIClientImpl;
+import io.equalexperts.service.external.priceclient.PriceApi;
+import io.equalexperts.service.external.priceclient.impl.PriceApiImpl;
 import io.equalexperts.service.internal.cartengine.CartServiceImpl;
-import io.equalexperts.validators.ValidatorProvider;
-import io.equalexperts.validators.impl.ValidatorProviderImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.net.http.HttpClient;
 
 import static io.equalexperts.constant.ErrorConstants.NOT_FOUND_ERROR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,13 +27,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag("int") //Integration test
 @DisplayName("Int-Tests - Given CartService")
 class CartServiceIntTest {
+    private static final String API_URI = "backend-take-home-test-data";
+    private static final String BASE_URL = "https://equalexperts.github.io";
+    private static final HttpClient httpClient = HttpClient.newHttpClient();
     private final TaxCalculator taxCalculator = new TaxCalculatorImpl(BigDecimal.valueOf(12.5)); // @12.5% tax
-    private final ValidatorProvider validatorProvider = new ValidatorProviderImpl();
-    private final PriceAPIClient priceAPIClient = new PriceAPIClientImpl();
+    private final PriceApi priceApi = new PriceApiImpl(API_URI, BASE_URL, httpClient);
     private final Cart cart = new CartImpl();
     private final CartCalculator cartCalculator = new CartCalculatorImpl(taxCalculator);
-    private final CartFacade cartFacade = new CartFacadeImpl(cart, cartCalculator);
-    private final CartService cartService = new CartServiceImpl(validatorProvider, priceAPIClient, cartFacade);
+    private final CartService cartService = new CartServiceImpl(priceApi, cart, cartCalculator);
 
     @Nested
     @DisplayName("Validate & AddToCart - Positive Int-Test Scenarios")
@@ -87,20 +85,21 @@ class CartServiceIntTest {
             cartService.validateAndAddToCart(new ProductIn("weetabix", 10));
 
             // When
-            final var consolidatedCart = cartService.validateAndAddToCart(new ProductIn("weetabix", 0));
-            final var cornflakesCartItem = consolidatedCart.items().stream().filter(item -> item.productName().equals("cornflakes")).findAny().get();
+            final var consolidatedCart = cartService.validateAndAddToCart(new ProductIn("weetabix", 1));
+            final var cornflakesCartItem = consolidatedCart.items().stream().filter(item -> item.productName().equals("cornflakes")).findAny();
 
             // Then
+            assertTrue(cornflakesCartItem.isPresent());
             assertFalse(consolidatedCart.errors().hasErrors());
             assertNotNull(consolidatedCart.items());
             assertNotNull(consolidatedCart.totals());
-            assertNotNull(cornflakesCartItem.price());
-            assertEquals("cornflakes", cornflakesCartItem.productName());
+            assertNotNull(cornflakesCartItem.get().price());
+            assertEquals("cornflakes", cornflakesCartItem.get().productName());
 
             assertEquals(5, consolidatedCart.items().size());
-            assertEquals(64.85, consolidatedCart.totals().tax().doubleValue());
-            assertEquals(518.81, consolidatedCart.totals().subTotal().doubleValue());
-            assertEquals(583.66, consolidatedCart.totals().total().doubleValue());
+            assertEquals(66.1, consolidatedCart.totals().tax().doubleValue());
+            assertEquals(528.79, consolidatedCart.totals().subTotal().doubleValue());
+            assertEquals(594.89, consolidatedCart.totals().total().doubleValue());
         }
     }
 
